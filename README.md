@@ -7,6 +7,7 @@ supports the wider ecosystem of library builders.
 ## Quick facts
 
 - **Where to find us:** You can reach out to us on [Zulip](https://rust-lang.zulipchat.com).
+- **Calendar:** You can find Libs meetings on our [Google Calendar](https://calendar.google.com/calendar?cid=OWt1dThldnE0ZWg2dWFjbTI2MmswcGhyaThAZ3JvdXAuY2FsZW5kYXIuZ29vZ2xlLmNvbQ)
 
 ## Code of Conduct and licensing
 
