@@ -14,7 +14,7 @@ assignees: ''
 # Info
 
 * Lead: *names here*
-* Lang-team liaison: *names here*
+* Libs-team liaison: *names here*
 * [Charter](XXX)
 * Repository [rust-lang/XXX](https://github.com/rust-lang/XXX)
 * Zulip stream [`#project-XXX`](XXX)
