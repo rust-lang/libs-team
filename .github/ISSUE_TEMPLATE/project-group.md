@@ -1,7 +1,7 @@
 ---
 name: Project Group
 about: Issue representing a successfully chartered project group
-title: "(My meeting proposal)"
+title: "XXX Project Group"
 labels: project-group, T-libs
 assignees: ''
 
