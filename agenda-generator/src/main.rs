@@ -12,8 +12,6 @@ fn main() -> Result<()> {
 
 ###### tags: `Libs Meetings` `Minutes`
 
-**Attendees**: ...
-
 ## Agenda
 
 - Triage
@@ -30,6 +28,8 @@ fn main() -> Result<()> {
 
     println!(
         "## Notes
+
+**Attendees**: ...
 
 ...
 
