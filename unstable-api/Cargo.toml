@@ -1,0 +1,15 @@
+[package]
+name = "cargo-unstable-api"
+version = "0.0.0"
+authors = ["Ashley Mannix <ashleymannix@live.com.au>"]
+edition = "2018"
+
+[dependencies.syn]
+version = "1"
+features = ["full", "extra-traits", "visit"]
+
+[dependencies.structopt]
+version = "0.3"
+
+[dependencies.anyhow]
+version = "1"
