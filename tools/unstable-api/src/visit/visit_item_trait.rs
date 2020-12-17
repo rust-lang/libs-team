@@ -19,13 +19,15 @@ impl<'a> UnstableVisitor<'a> {
                     });
 
                     self.feature
-                        .assert_stable()
+                        .assert_stable(node)
                         .visit_trait_item_const(&syn::TraitItemConst {
                             attrs,
                             ..node.clone()
                         })
                 } else {
-                    self.feature.assert_stable().visit_trait_item_const(node)
+                    self.feature
+                        .assert_stable(node)
+                        .visit_trait_item_const(node)
                 }
             }
 
@@ -43,13 +45,15 @@ impl<'a> UnstableVisitor<'a> {
                     });
 
                     self.feature
-                        .assert_stable()
+                        .assert_stable(node)
                         .visit_trait_item_macro(&syn::TraitItemMacro {
                             attrs,
                             ..node.clone()
                         })
                 } else {
-                    self.feature.assert_stable().visit_trait_item_macro(node)
+                    self.feature
+                        .assert_stable(node)
+                        .visit_trait_item_macro(node)
                 }
             }
 
@@ -65,14 +69,16 @@ impl<'a> UnstableVisitor<'a> {
                         ..node.clone()
                     });
 
-                    self.feature
-                        .assert_stable()
-                        .visit_trait_item_method(&syn::TraitItemMethod {
+                    self.feature.assert_stable(node).visit_trait_item_method(
+                        &syn::TraitItemMethod {
                             attrs,
                             ..node.clone()
-                        })
+                        },
+                    )
                 } else {
-                    self.feature.assert_stable().visit_trait_item_method(node)
+                    self.feature
+                        .assert_stable(node)
+                        .visit_trait_item_method(node)
                 }
             }
 
@@ -86,13 +92,13 @@ impl<'a> UnstableVisitor<'a> {
                     });
 
                     self.feature
-                        .assert_stable()
+                        .assert_stable(node)
                         .visit_trait_item_type(&syn::TraitItemType {
                             attrs,
                             ..node.clone()
                         })
                 } else {
-                    self.feature.assert_stable().visit_trait_item_type(node)
+                    self.feature.assert_stable(node).visit_trait_item_type(node)
                 }
             }
         }

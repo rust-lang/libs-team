@@ -11,12 +11,14 @@ impl<'a> UnstableVisitor<'a> {
                 ..node.clone()
             });
 
-            self.feature.assert_stable().visit_item_fn(&syn::ItemFn {
-                attrs,
-                ..node.clone()
-            })
+            self.feature
+                .assert_stable(node)
+                .visit_item_fn(&syn::ItemFn {
+                    attrs,
+                    ..node.clone()
+                })
         } else {
-            self.feature.assert_stable().visit_item_fn(node)
+            self.feature.assert_stable(node).visit_item_fn(node)
         }
     }
 }

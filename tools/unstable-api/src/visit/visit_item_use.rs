@@ -10,12 +10,18 @@ impl<'a> UnstableVisitor<'a> {
                 ..node.clone()
             });
 
-            self.feature.assert_stable().visit_item_use(&syn::ItemUse {
-                attrs,
-                ..node.clone()
-            })
+            self.feature
+                .assert_stable(node)
+                .visit_item_use(&syn::ItemUse {
+                    attrs,
+                    ..node.clone()
+                })
+        }
+        // `use` statements may be unstable without being public
+        else if let syn::Visibility::Public(_) = node.vis {
+            self.feature.assert_stable(node).visit_item_use(node)
         } else {
-            self.feature.assert_stable().visit_item_use(node)
+            visit::visit_item_use(self, node)
         }
     }
 }

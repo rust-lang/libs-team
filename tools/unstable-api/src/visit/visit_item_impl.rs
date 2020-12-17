@@ -14,13 +14,13 @@ impl<'a> UnstableVisitor<'a> {
                     });
 
                     self.feature
-                        .assert_stable()
+                        .assert_stable(node)
                         .visit_impl_item_const(&syn::ImplItemConst {
                             attrs,
                             ..node.clone()
                         })
                 } else {
-                    self.feature.assert_stable().visit_impl_item_const(node)
+                    self.feature.assert_stable(node).visit_impl_item_const(node)
                 }
             }
 
@@ -38,13 +38,13 @@ impl<'a> UnstableVisitor<'a> {
                     });
 
                     self.feature
-                        .assert_stable()
+                        .assert_stable(node)
                         .visit_impl_item_macro(&syn::ImplItemMacro {
                             attrs,
                             ..node.clone()
                         })
                 } else {
-                    self.feature.assert_stable().visit_impl_item_macro(node)
+                    self.feature.assert_stable(node).visit_impl_item_macro(node)
                 }
             }
 
@@ -61,13 +61,15 @@ impl<'a> UnstableVisitor<'a> {
                     });
 
                     self.feature
-                        .assert_stable()
+                        .assert_stable(node)
                         .visit_impl_item_method(&syn::ImplItemMethod {
                             attrs,
                             ..node.clone()
                         })
                 } else {
-                    self.feature.assert_stable().visit_impl_item_method(node)
+                    self.feature
+                        .assert_stable(node)
+                        .visit_impl_item_method(node)
                 }
             }
 
@@ -81,13 +83,13 @@ impl<'a> UnstableVisitor<'a> {
                     });
 
                     self.feature
-                        .assert_stable()
+                        .assert_stable(node)
                         .visit_impl_item_type(&syn::ImplItemType {
                             attrs,
                             ..node.clone()
                         })
                 } else {
-                    self.feature.assert_stable().visit_impl_item_type(node)
+                    self.feature.assert_stable(node).visit_impl_item_type(node)
                 }
             }
         }

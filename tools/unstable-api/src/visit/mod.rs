@@ -1,6 +1,6 @@
 use anyhow::{anyhow, ensure, Context, Error};
 use syn::{
-    export::ToTokens,
+    export::{ToTokens, TokenStream2 as TokenStream},
     ext::IdentExt,
     visit::{self, Visit},
 };
@@ -51,14 +51,17 @@ struct UnstableVisitor<'a> {
     feature: Feature<'a>,
     root_file_path: PathBuf,
     mod_file_path: PathBuf,
-    current_mod: String,
-    inline_mods: Vec<String>,
+    current_module: String,
+    inline_modules: Vec<String>,
     discovered_modules: Vec<DiscoveredModule>,
 }
 
 #[derive(Debug)]
 struct DiscoveredModule {
     name: String,
+    // A module may have a `#[unstable]` attribute on it
+    // TODO: Also support `#![unstable]`
+    inherit_feature: bool,
     parents: Vec<String>,
     path: Option<PathBuf>,
 }
@@ -122,7 +125,7 @@ impl<'a, 'ast> Visit<'ast> for UnstableVisitor<'a> {
 }
 
 impl<'a> UnstableVisitor<'a> {
-    fn new(current_mod: String, mod_file_path: PathBuf, feature: Feature<'a>) -> Self {
+    fn new(current_module: String, mod_file_path: PathBuf, feature: Feature<'a>) -> Self {
         UnstableVisitor {
             feature,
             root_file_path: {
@@ -142,8 +145,8 @@ impl<'a> UnstableVisitor<'a> {
                 }
             },
             mod_file_path,
-            inline_mods: vec![],
-            current_mod,
+            inline_modules: vec![],
+            current_module,
             discovered_modules: vec![],
         }
     }
@@ -162,7 +165,7 @@ impl<'a> UnstableVisitor<'a> {
     }
 
     fn visit_unstable_item(&mut self, item: impl ToTokens) {
-        println!("// mod {}", self.current_mod);
+        println!("// mod {}", self.current_module);
         println!("{}", item.into_token_stream());
         println!();
     }
@@ -170,9 +173,9 @@ impl<'a> UnstableVisitor<'a> {
     fn resolve_next_mod_file_path(&mut self) -> Result<Option<UnstableVisitor<'a>>, Error> {
         if let Some(next) = self.discovered_modules.pop() {
             let next_mod = {
-                let mut next_mod = self.current_mod.clone();
+                let mut next_mod = self.current_module.clone();
 
-                for inline_mod in self.inline_mods.iter().chain(Some(&next.name)) {
+                for inline_mod in self.inline_modules.iter().chain(Some(&next.name)) {
                     next_mod.push_str("::");
                     next_mod.push_str(inline_mod);
                 }
@@ -193,7 +196,7 @@ impl<'a> UnstableVisitor<'a> {
                 return Ok(Some(UnstableVisitor::new(
                     next_mod,
                     path.clone(),
-                    self.feature,
+                    self.feature.inherit(next.inherit_feature),
                 )));
             }
 
@@ -225,7 +228,7 @@ impl<'a> UnstableVisitor<'a> {
                     return Ok(Some(UnstableVisitor::new(
                         next_mod,
                         path.clone(),
-                        self.feature,
+                        self.feature.inherit(next.inherit_feature),
                     )));
                 }
             }
@@ -248,6 +251,13 @@ struct Feature<'a> {
 }
 
 impl<'a> Feature<'a> {
+    fn inherit(self, inherit_feature: bool) -> Feature<'a> {
+        Feature {
+            name: self.name,
+            inherited: inherit_feature,
+        }
+    }
+
     fn is_unstable(self, attrs: &[syn::Attribute], vis: Option<&syn::Visibility>) -> bool {
         match vis {
             // If no visibility is given we assume it's public
@@ -267,8 +277,9 @@ impl<'a> Feature<'a> {
             .collect()
     }
 
-    fn assert_stable(self) -> AssertStableVisitor<'a> {
+    fn assert_stable(self, node: impl ToTokens) -> AssertStableVisitor<'a> {
         AssertStableVisitor {
+            tokens: node.to_token_stream(),
             feature: Feature {
                 name: self.name,
                 inherited: false,
@@ -279,6 +290,7 @@ impl<'a> Feature<'a> {
 
 #[derive(Debug)]
 struct AssertStableVisitor<'a> {
+    tokens: TokenStream,
     feature: Feature<'a>,
 }
 
@@ -286,7 +298,8 @@ impl<'a, 'ast> Visit<'ast> for AssertStableVisitor<'a> {
     fn visit_attribute(&mut self, node: &'ast syn::Attribute) {
         assert!(
             !node.is_unstable(self.feature.name),
-            "encountered an unexpected unstable attribute (this is a bug)"
+            "encountered an unexpected unstable attribute in {} (this is a bug)",
+            self.tokens,
         );
     }
 }

@@ -12,12 +12,12 @@ impl<'a> UnstableVisitor<'a> {
                         ..node.clone()
                     });
 
-                    self.feature.assert_stable().visit_field(&syn::Field {
+                    self.feature.assert_stable(node).visit_field(&syn::Field {
                         attrs,
                         ..node.clone()
                     })
                 } else {
-                    self.feature.assert_stable().visit_field(node)
+                    self.feature.assert_stable(node).visit_field(node)
                 }
             }
         }

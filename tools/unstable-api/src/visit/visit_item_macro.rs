@@ -15,13 +15,13 @@ impl<'a> UnstableVisitor<'a> {
             });
 
             self.feature
-                .assert_stable()
+                .assert_stable(node)
                 .visit_item_macro(&syn::ItemMacro {
                     attrs,
                     ..node.clone()
                 })
         } else {
-            self.feature.assert_stable().visit_item_macro(node)
+            self.feature.assert_stable(node).visit_item_macro(node)
         }
     }
 }
