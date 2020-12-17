@@ -1,0 +1,15 @@
+[package]
+name = "cargo-list-contributors"
+version = "0.0.0"
+authors = ["Ashley Mannix <ashleymannix@live.com.au>"]
+edition = "2018"
+
+[[bin]]
+name = "cargo-list-contributors"
+path = "main.rs"
+
+[dependencies.walkdir]
+version = "2"
+
+[dependencies.structopt]
+version = "0.3"
