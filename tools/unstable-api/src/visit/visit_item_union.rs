@@ -1,6 +1,6 @@
 use super::*;
 
-impl<'a> UnstableVisitor<'a> {
+impl<'a> ModuleVisitor<'a> {
     pub(super) fn visit_item_union(&mut self, node: &syn::ItemUnion) {
         let is_unstable = self.feature.is_unstable(&node.attrs, Some(&node.vis));
         let mut visitor = FilteredUnstableItemVisitor::<syn::Field> {

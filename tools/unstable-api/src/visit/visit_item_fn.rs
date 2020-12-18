@@ -1,6 +1,6 @@
 use super::*;
 
-impl<'a> UnstableVisitor<'a> {
+impl<'a> ModuleVisitor<'a> {
     pub(super) fn visit_item_fn(&mut self, node: &syn::ItemFn) {
         if self.feature.is_unstable(&node.attrs, Some(&node.vis)) {
             let attrs = self.feature.strip_attrs(&node.attrs);

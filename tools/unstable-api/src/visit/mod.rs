@@ -1,14 +1,16 @@
 use anyhow::{anyhow, ensure, Context, Error};
 use syn::{
-    export::{ToTokens, TokenStream2 as TokenStream},
+    export::{Span, ToTokens, TokenStream2 as TokenStream},
     ext::IdentExt,
     visit::{self, Visit},
 };
+use quote::quote;
 
-use std::{fs, path::PathBuf};
+use std::{fs, fmt, path::PathBuf};
 
 use crate::util::{self, AttributeExt};
 
+mod visit_file;
 mod visit_item_const;
 mod visit_item_enum;
 mod visit_item_fn;
@@ -33,40 +35,130 @@ pub fn pub_unstable(mut crate_root: PathBuf, feature: &str) -> Result<(), Error>
     crate_root.push("src");
     crate_root.push("lib.rs");
 
-    let mut visitor = UnstableVisitor::new(
-        crate_name,
+    let current_mod = Module {
+        original: syn::ItemMod {
+            attrs: vec![],
+            vis: syn::Visibility::Public(syn::VisPublic { pub_token: Default::default() }),
+            mod_token: Default::default(),
+            ident: syn::Ident::new(&crate_name, Span::call_site()),
+            content: None,
+            semi: Some(Default::default()),
+        },
+        items: vec![],
+        children: vec![],
+    };
+
+    let mut visitor = ModuleVisitor::new(
+        current_mod,
         crate_root,
         Feature {
             name: feature,
             inherited: false,
         },
     );
-    visitor.visit()?;
+    visitor.visit_module_file()?;
+
+    if visitor.module.is_unstable() {
+        println!("{}", visitor.module.to_token_stream());
+    }
 
     Ok(())
 }
 
 #[derive(Debug)]
-struct UnstableVisitor<'a> {
+struct ModuleVisitor<'a> {
     feature: Feature<'a>,
     root_file_path: PathBuf,
-    mod_file_path: PathBuf,
-    current_module: String,
-    inline_modules: Vec<String>,
+    module_file_path: PathBuf,
+    module: Module,
+    inline_modules: Vec<InlineModule>,
     discovered_modules: Vec<DiscoveredModule>,
 }
 
+impl<'a> ModuleVisitor<'a> {
+    fn parse_file(&self) -> Result<syn::File, Error> {
+        let content = fs::read_to_string(&self.module_file_path)
+            .context(format!("reading {:?}", self.module_file_path))?;
+
+        let node = syn::parse_file(&content)?;
+
+        Ok(node)
+    }
+}
+
+struct Module {
+    original: syn::ItemMod,
+    items: Vec<TokenStream>,
+    children: Vec<Module>,
+}
+
+impl Module {
+    fn is_unstable(&self) -> bool {
+        self.items.len() > 0 || self.children.iter().any(Module::is_unstable)
+    }
+}
+
+impl fmt::Debug for Module {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.debug_struct("Module")
+            .field("ident", &self.original.ident)
+            .field("items", &self.items.len())
+            .field("children", &self.children)
+            .finish()
+    }
+}
+
+impl ToTokens for Module {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        let syn::ItemMod {
+            ref vis,
+            ref attrs,
+            ref ident,
+            ref mod_token,
+            ..
+        } = self.original;
+
+        let items = &self.items;
+        let children = &self.children;
+
+        tokens.extend(quote!(
+            #(#attrs)*
+            #vis #mod_token #ident {
+                #(#children)*
+
+                #(#items)*
+            }
+        ))
+    }
+}
+
 #[derive(Debug)]
+struct InlineModule {
+    name: String,
+}
+
 struct DiscoveredModule {
+    original: syn::ItemMod,
     name: String,
     // A module may have a `#[unstable]` attribute on it
     // TODO: Also support `#![unstable]`
     inherit_feature: bool,
-    parents: Vec<String>,
     path: Option<PathBuf>,
 }
 
-impl<'a, 'ast> Visit<'ast> for UnstableVisitor<'a> {
+impl fmt::Debug for DiscoveredModule {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.debug_struct("Module")
+            .field("ident", &self.original.ident)
+            .finish()
+    }
+}
+
+impl<'a, 'ast> Visit<'ast> for ModuleVisitor<'a> {
+    fn visit_file(&mut self, node: &'ast syn::File) {
+        self.visit_file(node)
+    }
+
     fn visit_item_const(&mut self, node: &'ast syn::ItemConst) {
         self.visit_item_const(node)
     }
@@ -124,63 +216,73 @@ impl<'a, 'ast> Visit<'ast> for UnstableVisitor<'a> {
     }
 }
 
-impl<'a> UnstableVisitor<'a> {
-    fn new(current_module: String, mod_file_path: PathBuf, feature: Feature<'a>) -> Self {
-        UnstableVisitor {
+impl<'a> ModuleVisitor<'a> {
+    fn new(module: Module, module_file_path: PathBuf, feature: Feature<'a>) -> Self {
+        ModuleVisitor {
             feature,
             root_file_path: {
-                match mod_file_path.file_stem().and_then(|stem| stem.to_str()) {
+                match module_file_path.file_stem().and_then(|stem| stem.to_str()) {
                     // For `mod.rs` and `lib.rs` we set the root path to `./`
                     Some("mod") | Some("lib") => {
-                        let mut root_file_path = mod_file_path.clone();
+                        let mut root_file_path = module_file_path.clone();
                         root_file_path.pop();
                         root_file_path
                     }
                     // For `x.rs` we set the root path to `./x`
                     _ => {
-                        let mut root_file_path = mod_file_path.clone();
+                        let mut root_file_path = module_file_path.clone();
                         root_file_path.set_extension("");
                         root_file_path
                     }
                 }
             },
-            mod_file_path,
+            module_file_path,
             inline_modules: vec![],
-            current_module,
+            module,
             discovered_modules: vec![],
         }
     }
 
-    fn visit(&mut self) -> Result<(), Error> {
-        let content = fs::read_to_string(&self.mod_file_path)
-            .context(format!("reading {:?}", self.mod_file_path))?;
+    fn visit_module_file(&mut self) -> Result<(), Error> {
+        self.visit_file(&self.parse_file()?);
 
-        self.visit_file(&syn::parse_file(&content)?);
+        while let Some(mut discovered) = self.resolve_next_module_file()? {
+            discovered.visit_module_file()?;
 
-        while let Some(mut next) = self.resolve_next_mod_file_path()? {
-            next.visit()?;
+            // If the module contains unstable items then retain it
+            if discovered.module.is_unstable() {
+                self.module.children.push(discovered.module);
+            }
+        }
+
+        Ok(())
+    }
+
+    fn visit_module_inline(&mut self) -> Result<(), Error> {
+        visit::visit_item_mod(self, &self.module.original.clone());
+
+        while let Some(mut discovered) = self.resolve_next_module_file()? {
+            discovered.visit_module_file()?;
+
+            // If the module contains unstable items then retain it
+            if discovered.module.is_unstable() {
+                self.module.children.push(discovered.module);
+            }
         }
 
         Ok(())
     }
 
     fn visit_unstable_item(&mut self, item: impl ToTokens) {
-        println!("// mod {}", self.current_module);
-        println!("{}", item.into_token_stream());
-        println!();
+        self.module.items.push(item.to_token_stream());
     }
 
-    fn resolve_next_mod_file_path(&mut self) -> Result<Option<UnstableVisitor<'a>>, Error> {
+    fn resolve_next_module_file(&mut self) -> Result<Option<ModuleVisitor<'a>>, Error> {
         if let Some(next) = self.discovered_modules.pop() {
-            let next_mod = {
-                let mut next_mod = self.current_module.clone();
-
-                for inline_mod in self.inline_modules.iter().chain(Some(&next.name)) {
-                    next_mod.push_str("::");
-                    next_mod.push_str(inline_mod);
-                }
-
-                next_mod
+            let next_mod = Module {
+                original: next.original,
+                items: vec![],
+                children: vec![],
             };
 
             if let Some(path) = next.path {
@@ -193,30 +295,24 @@ impl<'a> UnstableVisitor<'a> {
                     path
                 );
 
-                return Ok(Some(UnstableVisitor::new(
+                return Ok(Some(ModuleVisitor::new(
                     next_mod,
                     path.clone(),
                     self.feature.inherit(next.inherit_feature),
                 )));
             }
 
-            // If there are inline parent modules then include them in the path
-            let mut root_file_path = self.root_file_path.clone();
-            for parent in next.parents {
-                root_file_path.push(parent);
-            }
-
             let paths_to_try = vec![
                 {
                     // {root_file_path}/{next}.rs
-                    let mut alongside = root_file_path.clone();
+                    let mut alongside = self.root_file_path.clone();
                     alongside.push(&next.name);
                     alongside.set_extension("rs");
                     alongside
                 },
                 {
                     // {root_file_path}/{next}/mod.rs
-                    let mut nested = root_file_path.clone();
+                    let mut nested = self.root_file_path.clone();
                     nested.push(&next.name);
                     nested.push("mod.rs");
                     nested
@@ -225,7 +321,7 @@ impl<'a> UnstableVisitor<'a> {
 
             for path in &paths_to_try {
                 if path.exists() {
-                    return Ok(Some(UnstableVisitor::new(
+                    return Ok(Some(ModuleVisitor::new(
                         next_mod,
                         path.clone(),
                         self.feature.inherit(next.inherit_feature),
@@ -234,8 +330,8 @@ impl<'a> UnstableVisitor<'a> {
             }
 
             Err(anyhow!(
-                "could not find module `{}` in any of {:?} (this is a bug)",
-                next_mod,
+                "could not find module `{:?}` in any of {:?} (this is a bug)",
+                next_mod.original.ident,
                 paths_to_try
             ))
         } else {

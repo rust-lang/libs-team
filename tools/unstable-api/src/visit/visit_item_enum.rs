@@ -1,6 +1,6 @@
 use super::*;
 
-impl<'a> UnstableVisitor<'a> {
+impl<'a> ModuleVisitor<'a> {
     pub(super) fn visit_item_enum(&mut self, node: &syn::ItemEnum) {
         impl<'a, 'ast> Visit<'ast> for FilteredUnstableItemVisitor<'a, syn::Variant> {
             fn visit_variant(&mut self, node: &'ast syn::Variant) {

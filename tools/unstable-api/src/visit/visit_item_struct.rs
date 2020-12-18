@@ -1,6 +1,6 @@
 use super::*;
 
-impl<'a> UnstableVisitor<'a> {
+impl<'a> ModuleVisitor<'a> {
     pub(super) fn visit_item_struct(&mut self, node: &syn::ItemStruct) {
         impl<'a, 'ast> Visit<'ast> for FilteredUnstableItemVisitor<'a, syn::Field> {
             fn visit_field(&mut self, node: &'ast syn::Field) {
