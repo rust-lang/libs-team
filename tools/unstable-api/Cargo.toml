@@ -8,9 +8,6 @@ edition = "2018"
 version = "1"
 features = ["full", "extra-traits", "visit"]
 
-[dependencies.quote]
-version = "1"
-
 [dependencies.structopt]
 version = "0.3"
 

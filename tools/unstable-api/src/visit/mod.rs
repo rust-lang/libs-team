@@ -4,7 +4,6 @@ use syn::{
     ext::IdentExt,
     visit::{self, Visit},
 };
-use quote::quote;
 
 use std::{fs, fmt, path::PathBuf};
 
@@ -59,7 +58,7 @@ pub fn pub_unstable(mut crate_root: PathBuf, feature: &str) -> Result<(), Error>
     visitor.visit_module_file()?;
 
     if visitor.module.is_unstable() {
-        println!("{}", visitor.module.to_token_stream());
+        println!("{}", visitor.module);
     }
 
     Ok(())
@@ -108,27 +107,28 @@ impl fmt::Debug for Module {
     }
 }
 
-impl ToTokens for Module {
-    fn to_tokens(&self, tokens: &mut TokenStream) {
-        let syn::ItemMod {
-            ref vis,
-            ref attrs,
-            ref ident,
-            ref mod_token,
-            ..
-        } = self.original;
+// We use `Display` rather than `ToTokens` to control some formatting
+impl fmt::Display for Module {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        for attr in &self.original.attrs {
+            writeln!(f, "{}", attr.to_token_stream())?;
+        }
 
-        let items = &self.items;
-        let children = &self.children;
+        writeln!(f, "{} mod {} {{", self.original.vis.to_token_stream(), self.original.ident.to_token_stream())?;
 
-        tokens.extend(quote!(
-            #(#attrs)*
-            #vis #mod_token #ident {
-                #(#children)*
+        for child in &self.children {
+            writeln!(f, "{}", child)?;
+            writeln!(f)?;
+        }
 
-                #(#items)*
-            }
-        ))
+        for item in &self.items {
+            writeln!(f, "{}", item)?;
+            writeln!(f)?;
+        }
+
+        writeln!(f, "}}")?;
+
+        Ok(())
     }
 }
 
