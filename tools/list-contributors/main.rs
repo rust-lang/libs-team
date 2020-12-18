@@ -5,6 +5,7 @@ use std::{
     fmt,
     path::{Path, PathBuf},
     process::Command,
+    io,
 };
 
 use structopt::StructOpt;
@@ -32,7 +33,10 @@ fn main() {
 
     let top_contributors = top_contributors(opt.repo_root, opt.subpath, opt.since);
 
-    println!("{:#?}", top_contributors);
+    let stdout = io::stdout();
+    let stdout = stdout.lock();
+
+    drop(serde_json::to_writer_pretty(stdout, &top_contributors));
 }
 
 /// Recurse through the `/library` directory, listing contributors
