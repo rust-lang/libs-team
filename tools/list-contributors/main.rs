@@ -115,6 +115,7 @@ fn blame(
             "blame",
             "--line-porcelain",
             &format!("--since={}", since),
+            "--follow", // follow renames
             dir.as_ref().to_str().expect("non UTF8 path"),
         ])
         .current_dir(repo_root)
