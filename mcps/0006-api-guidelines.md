@@ -14,7 +14,7 @@ Coming up to 2021 we should revist existing recommendations and see if any new o
 This MCP proposes the Libs team as a whole be responsible for the recommendations made by the API Guidelines.
 That's basically always been the case, but it's worth making clear.
 
-## Enabling open discussion and focused reviews
+## Enabling open discussion and clear decisions
 
 The API Guidelines generate a lot of interest, because anybody building libraries in the ecosystem can use and contribute to them.
 
