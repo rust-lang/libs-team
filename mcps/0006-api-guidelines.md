@@ -21,13 +21,13 @@ The API Guidelines generate a lot of interest, because anybody building librarie
 It's been a while since new content was added, but discussion on guidelines has continued in GitHub issues on the repository.
 GitHub issues historically don't scale to live discussion and need regular gardening to keep them useful and directed.
 There's a sense of debt in each open issue that isn't really the case for the API Guidelines.
-GitHub's UX simply isn't geared to surfacing a treasure-trove of design insight for users to explore.
+GitHub's issues UX simply isn't geared to surfacing a treasure-trove of design insight for users to explore.
 
 Going forward, we should direct discussion, questions, and proposals related to guidelines to GitHub [discussions] instead of [issues].
-The disussions feature in GitHub is a lot like issues, except discussions don't have an open or closed status and the UX is better geared towards unbounded threaded comments.
-Discussions also offer a Stack Overflow esc question/answer UX that we might want to look at sometime.
+The disussions feature in GitHub is a lot like issues, except discussions don't have an open or closed status and the UX is better suited to unbounded threaded comments.
+Discussions also offer a question/answer UX somewhat like Stack Overflow that we might want to look at sometime.
 
-Most activity on the API Guidelines will be expected to take place in discussions, which will form a useful resource in their own right for anybody looking for a place to talk API design in Rust.
+Most activity on the API Guidelines will be expected to take place in discussions, which will form a useful resource in their own right for anybody looking for a place to talk and read about API design in Rust.
 Issues will be reserved for concrete acitonable changes to the API Guidelines content that are either uncontroversial enough to accept on-the-spot or issue an FCP on.
 If an issue or pull request is opened that isn't the result of an existing discussion, or that a member of the Libs team doesn't feel is concrete enough to FCP for, then it should be converted into a discussion or closed.
 Pull requests that aren't for accepted changes to the guidelines (either through an FCP or on-the-spot approval) should be closed.
