@@ -1,9 +1,10 @@
 use anyhow::{anyhow, ensure, Context, Error};
 use syn::{
-    export::{Span, ToTokens, TokenStream2 as TokenStream},
     ext::IdentExt,
     visit::{self, Visit},
 };
+use quote::ToTokens;
+use proc_macro2::{Span, TokenStream};
 
 use std::{fs, fmt, path::PathBuf};
 
