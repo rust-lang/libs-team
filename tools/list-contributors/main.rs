@@ -143,14 +143,15 @@ pub fn file_contributors(
 // This is just a grab-bag of filters for some changes that might be sweeping refactorings.
 static EXCLUDES: SyncLazy<RegexSet> = SyncLazy::new(|| RegexSet::new(&[
     "(?i)rustfmt",
-    "(?i)doc",
     "(?i)tidy",
-    "(?i)mv std libs to library/",
-    "(?i)deny unsafe ops in unsafe fns",
-    "(?i)unsafe_op_in_unsafe_fn",
+    "(?i)doc",
     "(?i)merge",
     "(?i)split",
     "(?i)move",
+    "(?i)refactor",
+    "(?i)mv std libs to library/",
+    "(?i)deny unsafe ops in unsafe fns",
+    "(?i)unsafe_op_in_unsafe_fn",
 ]).expect("failed to compile regex set"));
 
 /// Run `git log` on a given file and return a map of each author with the number of commits made.
