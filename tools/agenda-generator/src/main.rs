@@ -12,8 +12,11 @@ fn main() -> Result<()> {
 
 ###### tags: `Libs Meetings` `Minutes`
 
+**Attendees**: ...
+
 ## Agenda
 
+- [Open action items](https://hackmd.io/ovrbJj6CRduRgSA0Wzg2zg)
 - Triage
 - Anything else?
 
@@ -27,16 +30,9 @@ fn main() -> Result<()> {
     show_issues()?;
 
     println!(
-        "## Notes
+        "## Actions
 
-**Attendees**: ...
-
-...
-
-## Actions
-
-- [ ] Finish action items from the last meeting.
-- [ ] Reply to all issues/PRs discussed in this meeting.
+- [ ] Reply to all issues/PRs discussed in this meeting, or add them to the [open action items](https://hackmd.io/ovrbJj6CRduRgSA0Wzg2zg).
 "
     );
     Ok(())
