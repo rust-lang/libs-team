@@ -8,6 +8,9 @@ edition = "2018"
 name = "cargo-list-contributors"
 path = "main.rs"
 
+[dependencies.regex]
+version = "1"
+
 [dependencies.walkdir]
 version = "2"
 
