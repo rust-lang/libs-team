@@ -1,0 +1,18 @@
+[package]
+name = "ipcheck-host"
+version = "0.0.0"
+authors = ["Ashley Mannix <kodraus@hey.com>", "Christiaan Dirkx <christiaan@dirkx.email>"]
+publish = false
+edition = "2018"
+build = "build/build.rs"
+
+[[bin]]
+name = "ipcheck-host"
+path = "main.rs"
+
+[dependencies]
+serde_json = "1"
+
+[build-dependencies]
+cfg-if = "1"
+walkdir = "2"

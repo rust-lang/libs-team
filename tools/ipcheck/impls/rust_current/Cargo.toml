@@ -1,0 +1,13 @@
+[package]
+name = "ipcheck_current"
+version = "0.0.0"
+authors = ["Ashley Mannix <kodraus@hey.com>", "Christiaan Dirkx <christiaan@dirkx.email>"]
+publish = false
+edition = "2018"
+
+[[bin]]
+name = "ipcheck_current"
+path = "main.rs"
+
+[dependencies.serde_json]
+version = "1"
