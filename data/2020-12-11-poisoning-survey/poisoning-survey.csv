@@ -1,0 +1,882 @@
+Timestamp,Do you use the standard library’s lock types (Mutex or RwLock) in any of your projects?,Do you use locks from outside the standard library (such as from antidote or parking_lot) in any of your projects?,Which of these is closest to how you acquire locks? (Select all that apply),Have you ever thought carefully about lock poisoning in your projects?,"If so, what do you want to happen when a lock is poisoned? (Select all that apply)",Do you think you’ve benefited from the standard library’s lock types providing poisoning by default?,Do you use the standard library’s lock types or their guards in the public API of any of your projects?,"If so, what’s an example of how the standard library’s lock or guard types appear in the public API of any of your projects? (Please keep accidental information leakage in mind here and consider replacing names with placeholders)",How much friction do you think would be involved in migrating any of your projects from the standard library’s poisoning lock types to a non-poisoning lock crate like antidote or parking_lot? (That would mean replacing .lock().unwrap() with .lock()),Why do you use locks from outside the standard library? (Select all that apply),Do you implement poisoning some other way?,"If so, what do you want to happen when data is poisoned? (Select all that apply)",Would you use a poisoning implementation from the standard library if it was independent of Mutex or RwLock?
+2020/09/19 1:50:31 AM GMT+10,Yes,,,,,,No,,None,No,No,,
+2020/09/19 8:39:30 PM GMT+10,No,,,,,,No,,A manageable amount,To avoid having to write .lock.unwrap();For performance,No,,Yes
+2020/09/20 2:00:50 AM GMT+10,Yes,,,,,,No,,None,,,,
+2020/09/20 9:29:19 PM GMT+10,Yes,Yes,.lock().unwrap(),No,I want to access the data again,No,No,,A manageable amount,For performance,No,,No
+2020/09/20 10:11:52 PM GMT+10,Yes,Yes,.lock().unwrap();.lock().map_err(PoisonGuard::into_inner),No,,No,No,,A manageable amount,For performance,No,,Yes
+2020/09/22 11:46:02 AM GMT+10,Yes,No,.lock().map_err(PoisonGuard::into_inner),No,I want to access the data again,No,No,,A manageable amount,,,,
+2020/09/23 9:14:44 PM GMT+10,Yes,No,.lock().unwrap();.lock()?,No,I want to access the data again,No,No,,A manageable amount,,,,
+2020/09/24 3:06:29 AM GMT+10,Yes,No,.lock().unwrap(),No,I want my program to terminate;I never want to access the data again,No,No,,None,,,,
+2020/10/11 4:07:19 PM GMT+11,Yes,No,.lock()?,No,I want my program to terminate,No,Yes,,A manageable amount,,,,No
+2020/10/14 4:34:08 AM GMT+11,Yes,Yes,.lock().unwrap();.lock()?,Yes,I want my program to terminate,No,No,,None,For performance,No,I want my program to terminate,Yes
+2020/12/12 1:22:04 AM GMT+11,No,Yes,.lock().unwrap();.lock().unwrap_or_else(PoisonGuard::into_inner),Yes,I want my program to terminate;I want to access the data again,No,No,,A manageable amount,To avoid having to write .lock.unwrap();For performance;For async/await,No,,No
+2020/12/12 1:26:37 AM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I want my program to terminate;I never want to access the data again,No,No,,None,For performance;For async/await,,I want my program to terminate;I never want to access the data again,No
+2020/12/12 1:27:20 AM GMT+11,Yes,Yes,.lock().unwrap();.lock().unwrap_or_else(PoisonGuard::into_inner),Yes,I want to access the data again,No,No,,A manageable amount,For performance;For no-std;For async/await,No,,Yes
+2020/12/12 1:30:12 AM GMT+11,Yes,Yes,.lock().unwrap(),No,I want my program to terminate,No,No,,A manageable amount,For async/await,No,,No
+2020/12/12 1:33:13 AM GMT+11,Yes,Yes,.lock().unwrap();.lock()?,No,I want my program to terminate;I want to access the data again;I want to check and fix the data;I never want to access the data again,Yes,No,,None,For performance;For async/await,No,I want my program to terminate;I want to access the data again;I want to check and fix the data;I never want to access the data again,Yes
+2020/12/12 1:33:48 AM GMT+11,Yes,Yes,.lock().unwrap(),No,I want to access the data again,No,No,,None,For performance;For async/await,No,I want to access the data again,No
+2020/12/12 1:37:26 AM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I want my program to terminate,No,No,,A manageable amount,To avoid having to write .lock.unwrap();For performance;For async/await,No,,No
+2020/12/12 1:41:08 AM GMT+11,Yes,No,.lock().unwrap();.lock().unwrap_or_else(PoisonGuard::into_inner),No,,No,No,,None,,,,
+2020/12/12 1:41:52 AM GMT+11,Yes,No,.lock().unwrap(),Yes,I want to check and fix the data,Yes,,,A manageable amount,,,,
+2020/12/12 1:45:52 AM GMT+11,Yes,Yes,.lock().unwrap();.lock()?,No,I never want my program to terminate;I want to access the data again;I want to check and fix the data,No,No,,A manageable amount,To avoid having to write .lock.unwrap();For performance;For async/await,No,,Yes
+2020/12/12 1:46:25 AM GMT+11,Yes,Yes,.lock().unwrap(),No,I want to access the data again,No,No,,A manageable amount,For async/await,No,,No
+2020/12/12 1:47:33 AM GMT+11,Yes,Yes,.lock().unwrap();.lock().unwrap_or_else(PoisonGuard::into_inner);.lock().context(SomeUsefulContextFromSnafu)?,Yes,I want my program to terminate;There isn't actually any data to worry about: `Mutex<()>`. This is used in tests to model an external resource.,Yes,No,,A manageable amount,To avoid having to write .lock.unwrap(),No,,Yes
+2020/12/12 1:58:57 AM GMT+11,Yes,No,.lock().unwrap(),Yes,I want to check and fix the data,Yes,No,,A manageable amount,,,,
+2020/12/12 1:59:29 AM GMT+11,Yes,No,.lock().unwrap(),Yes,I want to check and fix the data,Yes,No,,A manageable amount,,,,
+2020/12/12 2:03:26 AM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I want my program to terminate;I want to access the data again;I never want to access the data again,No,No,,None,To avoid having to write .lock.unwrap();For performance;For async/await,No,,Yes
+2020/12/12 2:11:43 AM GMT+11,Yes,No,.lock().unwrap(),Yes,I want my program to terminate,Yes,No,,A manageable amount,,,,
+2020/12/12 2:12:31 AM GMT+11,Yes,Yes,.lock().unwrap(),No,I want my program to terminate,No,No,,None,For performance,No,I want my program to terminate,No
+2020/12/12 2:13:10 AM GMT+11,No,No,,,,,,,,,,,
+2020/12/12 2:14:51 AM GMT+11,Yes,No,.lock().unwrap(),Yes,I want my program to terminate;I never want to access the data again,Yes,No,,A manageable amount,,,,
+2020/12/12 2:16:54 AM GMT+11,Yes,No,.lock().unwrap(),No,,No,No,,A manageable amount,,No,,No
+2020/12/12 2:24:03 AM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate,Yes,No,,A manageable amount,,,,
+2020/12/12 2:28:04 AM GMT+11,Yes,Yes,.lock().unwrap(),No,I want my program to terminate,Yes,No,,A manageable amount,For performance,No,I want my program to terminate,Yes
+2020/12/12 2:28:44 AM GMT+11,Yes,No,.lock().unwrap();match mutex.lock(),Yes,I want my program to terminate;I want to check and fix the data,Yes,No,,A manageable amount,,,,
+2020/12/12 2:31:13 AM GMT+11,Yes,Yes,.lock().unwrap();.lock().unwrap_or_else(PoisonGuard::into_inner),Yes,I want to access the data again,No,No,,None,For performance;For async/await;APIs exposed by dependencies,No,,Yes
+2020/12/12 2:33:56 AM GMT+11,Yes,Yes,.lock().unwrap(),No,,No,No,,A manageable amount,To avoid having to write .lock.unwrap(),No,,Yes
+2020/12/12 2:36:40 AM GMT+11,Yes,No,.lock().unwrap();.lock()?;.lock().unwrap().context(T)?,Yes,I want my program to terminate,No,No,,A manageable amount,,,,
+2020/12/12 2:37:47 AM GMT+11,No,Yes,,,,,,,,For async/await,No,,Yes
+2020/12/12 2:45:17 AM GMT+11,Yes,No,.lock().unwrap(),No,,No,No,,A manageable amount,,,,
+2020/12/12 3:09:17 AM GMT+11,Yes,No,.lock().unwrap(),No,,No,No,,None,,,,
+2020/12/12 3:09:51 AM GMT+11,Yes,No,.lock().unwrap(),Yes,I want my program to terminate,Yes,No,,A manageable amount,,,,
+2020/12/12 3:26:38 AM GMT+11,Yes,No,.lock()?;.lock().unwrap_or_else(PoisonGuard::into_inner),Yes,I never want my program to terminate;I want to access the data again,No,No,,A manageable amount,,No,,Yes
+2020/12/12 3:39:36 AM GMT+11,Yes,No,.lock()?,No,,No,No,,None,,No,,No
+2020/12/12 3:49:12 AM GMT+11,No,Yes,.lock().unwrap(),No,,No,No,,None,To avoid having to write .lock.unwrap();For performance,No,,Yes
+2020/12/12 3:52:11 AM GMT+11,Yes,No,.lock().unwrap();.lock()?,Yes,I want my program to terminate;I never want to access the data again,Yes,Yes,impl SharedState { fn new() -> Arc<Mutex<Self>> { ... } },A manageable amount,,,,Yes
+2020/12/12 4:00:16 AM GMT+11,Yes,Yes,.lock().unwrap(),No,,Yes,,,None,To avoid having to write .lock.unwrap(),No,,No
+2020/12/12 4:09:36 AM GMT+11,Yes,No,.lock().unwrap(),Yes,I want my program to terminate,No,No,,A manageable amount,,,,
+2020/12/12 4:12:59 AM GMT+11,Yes,Yes,.lock().unwrap();.lock().unwrap_or_else(PoisonGuard::into_inner),No,I never want my program to terminate;I want to access the data again;I want to check and fix the data,No,Yes,We have a crate which wraps the dashmap concurrent hash map crate and it returns refs that have lock guards on them.,A manageable amount,To avoid having to write .lock.unwrap();For async/await,No,,No
+2020/12/12 4:36:22 AM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate;I want to access the data again,No,No,,None,,,,
+2020/12/12 4:38:43 AM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate,No,No,,None,,,,
+2020/12/12 5:01:26 AM GMT+11,Yes,No,.lock().unwrap(),No,,,No,,None,,,,
+2020/12/12 5:15:46 AM GMT+11,Yes,No,.lock().unwrap();.lock()?,No,I want my program to terminate,No,No,,A manageable amount,For performance,No,,Yes
+2020/12/12 5:33:41 AM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate,No,No,,None,,,,
+2020/12/12 5:38:40 AM GMT+11,No,Yes,,,,,,,,To avoid having to write .lock.unwrap();For performance,No,,No
+2020/12/12 5:45:01 AM GMT+11,Yes,No,.lock().unwrap(),Yes,I want my program to terminate,No,No,,None,,,,
+2020/12/12 5:55:25 AM GMT+11,Yes,Yes,.lock().unwrap(),No,,,No,,A manageable amount,For performance,No,,Yes
+2020/12/12 5:56:27 AM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I want my program to terminate,No,No,,A manageable amount,For performance;For async/await,No,I want my program to terminate,No
+2020/12/12 5:59:15 AM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I want my program to terminate,No,No,,A manageable amount,To avoid having to write .lock.unwrap();For performance,No,I want my program to terminate,No
+2020/12/12 6:04:13 AM GMT+11,Yes,No,.lock().unwrap();.lock()?,No,,No,No,,None,,,,
+2020/12/12 6:09:18 AM GMT+11,Yes,No,.lock().unwrap();.lock()?,Yes,"Having the choice of the behavior with different methods instead of just ""lock"" would be a good solution IMO",No,No,,None,,,,
+2020/12/12 6:10:04 AM GMT+11,Yes,Yes,.lock().unwrap();.lock()?,Yes,I want to access the data again;I want to check and fix the data,Yes,No,,None,For performance;For reentrant mutexes,No,,Yes
+2020/12/12 6:18:15 AM GMT+11,Yes,No,.lock()?,Yes,I want my program to terminate;I want to check and fix the data,Yes,No,,None,,,,
+2020/12/12 6:21:21 AM GMT+11,Yes,No,.lock().unwrap(),No,I never want to access the data again,No,No,,None,,,,
+2020/12/12 6:22:17 AM GMT+11,No,Yes,.lock().unwrap(),No,I want my program to terminate,No,No,,None,To avoid having to write .lock.unwrap();For performance,No,I want my program to terminate,Yes
+2020/12/12 6:22:32 AM GMT+11,Yes,Yes,.lock()?,Yes,I want my program to terminate;I want to check and fix the data,No,No,,A manageable amount,To avoid having to write .lock.unwrap();For performance;For async/await,No,,No
+2020/12/12 6:24:00 AM GMT+11,Yes,Yes,.lock().unwrap(),No,I want my program to terminate,No,No,,None,To avoid having to write .lock.unwrap();For performance;For async/await,No,,No
+2020/12/12 6:24:35 AM GMT+11,Yes,No,.lock()?,Yes,I want my program to terminate;I never want to access the data again,No,No,,A manageable amount,,,,
+2020/12/12 6:26:27 AM GMT+11,Yes,No,.lock().unwrap(),No,I want to access the data again,Yes,Yes,We use it for the interface of multiple libs that all need to concurrently access the same USB device.,None,For no-std,No,I want to access the data again,Yes
+2020/12/12 6:28:26 AM GMT+11,Yes,No,.lock().unwrap(),No,,No,No,,A manageable amount,,,,
+2020/12/12 6:29:11 AM GMT+11,Yes,Yes,.lock().unwrap(),No,I want my program to terminate,No,No,,None,For performance;For async/await,No,,No
+2020/12/12 6:29:30 AM GMT+11,No,Yes,.lock().unwrap(),No,,No,No,,None,To avoid having to write .lock.unwrap();For async/await,No,I never want to access the data again,Yes
+2020/12/12 6:30:01 AM GMT+11,Yes,Yes,.lock()?,Yes,I never want my program to terminate;I want to access the data again;I want to check and fix the data,No,No,,None,For performance;For no-std,No,,Yes
+2020/12/12 6:30:11 AM GMT+11,Yes,No,.lock().unwrap(),Yes,I want my program to terminate,Yes,No,,A manageable amount,,,,
+2020/12/12 6:34:08 AM GMT+11,Yes,No,.lock().unwrap(),No,I never want my program to terminate;I want to check and fix the data,No,Yes,,None,,No,,No
+2020/12/12 6:35:19 AM GMT+11,Yes,Yes,.lock().unwrap();.lock()?,Yes,I want to check and fix the data;I never want to access the data again,Yes,No,,A manageable amount,For performance;For no-std,Yes,I want my program to terminate,Yes
+2020/12/12 6:35:42 AM GMT+11,Yes,Yes,.lock().unwrap(),Yes,"I want my program to terminate;I want to access the data again;I never want to access the data again;In cases where there's *real* danger involved, especially where we're talking about potential soundness invariants, I strongly prefer requiring panic=abort",Yes,No,,A manageable amount,"For async/await;Often I want to use slightly-less-primitive sync primitives, like crossbeam::Parker",Yes,"I never want to access the data again;Often I will mem::take the data out of the object when locked, leaving behind a dead state, and restore it afterwards. This way, a panic will result in future reads seeing the ""dead"" state, triggering another panic",Yes
+2020/12/12 6:37:03 AM GMT+11,Yes,No,.lock().unwrap(),Yes,I want my program to terminate,No,No,,A manageable amount,,,,Yes
+2020/12/12 6:37:46 AM GMT+11,Yes,Yes,.lock().unwrap(),,,No,No,,None,To avoid having to write .lock.unwrap();For performance,No,,No
+2020/12/12 6:38:59 AM GMT+11,Yes,Yes,.lock().unwrap(),Yes,"Usually, I want the thread to panic, but I also want the option to access the data in special cases",Yes,No,,A manageable amount,For async/await,No,,Yes
+2020/12/12 6:40:10 AM GMT+11,Yes,No,.lock()?,Yes,I never want to access the data again,Yes,No,,A manageable amount,For performance;For async/await,No,I never want to access the data again,Yes
+2020/12/12 6:42:09 AM GMT+11,Yes,Yes,.lock().unwrap();.lock()?,Yes,I want my program to terminate,Yes,No,,None,For async/await,No,,Yes
+2020/12/12 6:43:19 AM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I want my program to terminate,No,No,,None,For performance;For async/await,No,I want my program to terminate,No
+2020/12/12 6:48:49 AM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate;I want to check and fix the data,Yes,Yes,,A manageable amount,,No,,Yes
+2020/12/12 6:49:46 AM GMT+11,Yes,Yes,.lock().unwrap(),No,I want my program to terminate,No,No,,None,For performance;For no-std;For async/await,No,I want my program to terminate,No
+2020/12/12 6:52:23 AM GMT+11,Yes,Yes,.lock()?,Yes,I want my program to terminate,No,No,,A manageable amount,For async/await,No,,No
+2020/12/12 6:52:23 AM GMT+11,Yes,No,.lock().unwrap(),Yes,I want my program to terminate;I never want to access the data again,Yes,No,,A manageable amount,,,,
+2020/12/12 6:52:27 AM GMT+11,No,Yes,.lock().unwrap();.lock()?,No,,No,No,,None,To avoid having to write .lock.unwrap();For performance,No,I want my program to terminate,Yes
+2020/12/12 6:52:47 AM GMT+11,Yes,Yes,.lock()?;.lock().unwrap_or_else(PoisonGuard::into_inner),Yes,I want my program to terminate;I want to access the data again;I want to check and fix the data,No,No,,A manageable amount,To avoid having to write .lock.unwrap();For performance;For no-std,No,I want my program to terminate;I want to access the data again;I want to check and fix the data,No
+2020/12/12 6:54:15 AM GMT+11,Yes,Yes,.lock()?,Yes,I want my program to terminate;I want to check and fix the data,No,No,,None,For performance;For async/await,No,I want my program to terminate;I want to check and fix the data,No
+2020/12/12 6:55:18 AM GMT+11,Yes,Yes,.lock().unwrap(),No,"panic on lock, None on try_lock",No,No,,A manageable amount,To avoid having to write .lock.unwrap();For performance;For no-std;For async/await,No,"panic on lock, None on try_lock",Yes
+2020/12/12 7:00:03 AM GMT+11,Yes,Yes,.lock().unwrap();.lock().unwrap_or_else(PoisonGuard::into_inner),Yes,I never want my program to terminate;I want to access the data again,No,No,,A manageable amount,To avoid having to write .lock.unwrap();For performance,No,,No
+2020/12/12 7:00:44 AM GMT+11,Yes,Yes,.lock().unwrap();.lock()?,No,,No,No,,,To avoid having to write .lock.unwrap();For performance;For async/await,No,,No
+2020/12/12 7:01:56 AM GMT+11,Yes,No,.lock().unwrap(),No,,No,No,,None,For async/await,No,I never want my program to terminate;I want to access the data again,No
+2020/12/12 7:02:09 AM GMT+11,No,Yes,,No,I want my program to terminate,No,No,,None,To avoid having to write .lock.unwrap();For performance,No,,No
+2020/12/12 7:02:32 AM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I want my program to terminate;I never want to access the data again,Yes,No,,A manageable amount,For performance,No,,Yes
+2020/12/12 7:03:05 AM GMT+11,Yes,No,.lock().unwrap();.lock()?;if let Ok(thing) = thing.lock(),No,I never want my program to terminate;I want to access the data again;I want to check and fix the data,No,No,,A manageable amount,,,,
+2020/12/12 7:03:27 AM GMT+11,Yes,Yes,.lock().unwrap(),No,I want my program to terminate,No,No,,None,For performance,No,,Yes
+2020/12/12 7:04:04 AM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I want my program to terminate,Yes,No,,A manageable amount,For async/await,No,,Yes
+2020/12/12 7:04:22 AM GMT+11,Yes,No,.lock().unwrap(),No,,Yes,No,,A manageable amount,,,,
+2020/12/12 7:04:47 AM GMT+11,Yes,No,.lock().unwrap(),Yes,I want my program to terminate,No,No,,None,,,,
+2020/12/12 7:06:21 AM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate,Yes,No,,None,,,,
+2020/12/12 7:06:46 AM GMT+11,Yes,Yes,.lock().unwrap(),No,I never want my program to terminate;I want to access the data again;I want to check and fix the data,No,No,,A manageable amount,For performance;For async/await,No,I want to access the data again;I want to check and fix the data,Yes
+2020/12/12 7:11:01 AM GMT+11,Yes,Yes,.lock()?,No,I want my program to terminate,No,No,,None,For performance;For async/await,No,I want my program to terminate,No
+2020/12/12 7:12:43 AM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate,No,No,,None,For no-std,No,I want my program to terminate,Yes
+2020/12/12 7:12:50 AM GMT+11,No,Yes,.lock(),No,I never want my program to terminate;I want to check and fix the data,No,No,,None,For performance;For async/await,No,,No
+2020/12/12 7:14:08 AM GMT+11,Yes,Yes,.lock().unwrap(),No,I want my program to terminate;I never want to access the data again,No,No,,A manageable amount,A dependent library is using them,No,,No
+2020/12/12 7:14:47 AM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate,Yes,No,,A manageable amount,,,,
+2020/12/12 7:18:38 AM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I want my program to terminate;I never want my program to terminate;I want to access the data again,No,No,,None,For performance;For no-std;For async/await,Yes,I never want my program to terminate,No
+2020/12/12 7:18:47 AM GMT+11,Yes,Yes,.lock().unwrap(),No,,No,No,,A manageable amount,To avoid having to write .lock.unwrap();For performance;For async/await,No,,No
+2020/12/12 7:18:51 AM GMT+11,Yes,Yes,.lock().unwrap(),No,I never want to access the data again,Yes,No,,A manageable amount,For performance;For async/await,,,No
+2020/12/12 7:20:44 AM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I want to check and fix the data,No,No,,A manageable amount,For async/await,No,,Yes
+2020/12/12 7:22:33 AM GMT+11,No,No,,,,,,,,,,,
+2020/12/12 7:22:48 AM GMT+11,Yes,No,.lock().unwrap(),No,I never want to access the data again,No,No,,None,For performance,No,,No
+2020/12/12 7:23:21 AM GMT+11,Yes,Yes,.lock().unwrap(),No,,No,No,,None,For performance;For async/await,No,,No
+2020/12/12 7:25:18 AM GMT+11,Yes,Yes,.lock().unwrap(),No,,No,Yes,,A manageable amount,To avoid having to write .lock.unwrap();For performance;For async/await,No,I never want my program to terminate,No
+2020/12/12 7:26:42 AM GMT+11,Yes,Yes,.lock().unwrap(),No,I want my program to terminate;I never want to access the data again,No,No,,None,To avoid having to write .lock.unwrap();For performance;For async/await,No,I want my program to terminate;I never want to access the data again,No
+2020/12/12 7:27:24 AM GMT+11,No,Yes,,,,,,,,To avoid having to write .lock.unwrap();For performance,No,,Yes
+2020/12/12 7:27:28 AM GMT+11,Yes,Yes,.lock().unwrap(),No,I never want my program to terminate,No,No,,A manageable amount,To avoid having to write .lock.unwrap();For performance;For async/await,No,I never want my program to terminate,No
+2020/12/12 7:29:45 AM GMT+11,No,Yes,.lock().unwrap(),No,I want my program to terminate,No,No,,A manageable amount,To avoid having to write .lock.unwrap();For performance,No,,No
+2020/12/12 7:31:13 AM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I want my program to terminate;I never want to access the data again,No,No,,A manageable amount,For async/await,No,,Yes
+2020/12/12 7:31:56 AM GMT+11,Yes,No,.lock().unwrap(),No,,No,No,,A manageable amount,,,,No
+2020/12/12 7:32:10 AM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I never want my program to terminate,No,No,,None,To avoid having to write .lock.unwrap();For performance;For async/await,No,,No
+2020/12/12 7:32:33 AM GMT+11,Yes,No,.lock().unwrap(),No,,Yes,No,,A manageable amount,For async/await,No,,No
+2020/12/12 7:33:31 AM GMT+11,Yes,Yes,.lock().unwrap(),Yes,"Propigate if the interior is `RefUnwindSafe`, do nothing if the interior is `RefUnwindSafe`",Yes,No,,A manageable amount,For performance;For no-std,Yes,"Propigate if the interior is `RefUnwindSafe`, do nothing if the interior is `RefUnwindSafe`",No
+2020/12/12 7:34:54 AM GMT+11,Yes,Yes,.lock()?,No,,No,No,,A manageable amount,For async/await,No,,
+2020/12/12 7:36:25 AM GMT+11,No,No,,,,,,,,,,,
+2020/12/12 7:37:58 AM GMT+11,Yes,Yes,.lock().unwrap();.lock()?,No,,No,No,,None,For performance,No,,No
+2020/12/12 7:39:07 AM GMT+11,Yes,No,.lock().unwrap(),Yes,I want my program to terminate;I never want to access the data again,No,No,,None,,,,
+2020/12/12 7:40:12 AM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I never want to access the data again,Yes,No,,A manageable amount,For performance;Additional features,No,If I'm using non-poisoning locks it's because the code within the critical section cannot panic.,Yes
+2020/12/12 7:41:01 AM GMT+11,No,Yes,.lock().unwrap();.lock()?,No,I want to check and fix the data,No,No,,None,For performance;For async/await,No,,No
+2020/12/12 7:43:00 AM GMT+11,Yes,No,.lock().unwrap_or_else(PoisonGuard::into_inner),Yes,I want to access the data again,No,No,,None,,No,I'd like to at least be able to check and unpoison the lock.,No
+2020/12/12 7:47:12 AM GMT+11,Yes,Yes,.lock().unwrap(),No,I want my program to terminate,No,No,,A manageable amount,To avoid having to write .lock.unwrap();For performance;For async/await,No,I want my program to terminate,No
+2020/12/12 7:47:25 AM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I want my program to terminate,Yes,No,,None,To avoid having to write .lock.unwrap();For performance,Yes,I want my program to terminate,Yes
+2020/12/12 7:47:50 AM GMT+11,Yes,Yes,.lock().unwrap(),No,I want to access the data again,No,No,,None,For async/await,No,I want to access the data again,No
+2020/12/12 7:48:59 AM GMT+11,Yes,No,.lock().unwrap();.lock().unwrap_or_else(PoisonGuard::into_inner),Yes,I want to access the data again,No,No,,None,,,,
+2020/12/12 7:55:24 AM GMT+11,Yes,Yes,.lock().unwrap(),No,I want to access the data again,No,No,,A manageable amount,To avoid having to write .lock.unwrap();For performance,No,,No
+2020/12/12 7:57:09 AM GMT+11,Yes,No,.lock().unwrap(),Yes,I want my program to terminate;I never want to access the data again,Yes,No,,A manageable amount,,,I want my program to terminate;I never want to access the data again,
+2020/12/12 7:58:18 AM GMT+11,Yes,No,.lock().unwrap(),No,,No,No,,None,,,,
+2020/12/12 7:59:02 AM GMT+11,Yes,Yes,.lock().unwrap(),No,,No,No,,None,To avoid having to write .lock.unwrap();For performance,No,,
+2020/12/12 8:01:12 AM GMT+11,Yes,Yes,.lock().unwrap();.lock()?,No,I want my program to terminate,No,No,,A manageable amount,For performance;For async/await,No,,No
+2020/12/12 8:01:28 AM GMT+11,Yes,No,.lock().unwrap(),No,I want to access the data again;I never want to access the data again,Yes,Yes,"impl<T: SomeTrait> SomeTrait for MutexGuard<'_, T>",A manageable amount,,,,
+2020/12/12 8:02:53 AM GMT+11,Yes,No,.lock().unwrap();.lock()?,No,I want my program to terminate,Yes,No,,None,For performance;For no-std,No,I want my program to terminate,Yes
+2020/12/12 8:03:00 AM GMT+11,No,No,.lock()?,No,I want my program to terminate;I want to check and fix the data,Yes,No,,A manageable amount,on a case by case basis when absolutely unnecessary,No,I want my program to terminate;I want to check and fix the data,Yes
+2020/12/12 8:03:51 AM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I want my program to terminate,No,No,,A manageable amount,For performance;For async/await,No,I want my program to terminate,Yes
+2020/12/12 8:05:12 AM GMT+11,Yes,No,.lock().unwrap(),Yes,I want my program to terminate,No,No,,None,,No,I want my program to terminate,Yes
+2020/12/12 8:06:02 AM GMT+11,Yes,Yes,.lock().unwrap(),No,"I really don´t know, I think it is specific to the data I am handling and the context",No,No,,A manageable amount,To avoid having to write .lock.unwrap();For async/await,No,,No
+2020/12/12 8:07:13 AM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate,,,,None,,,I want my program to terminate,
+2020/12/12 8:09:46 AM GMT+11,Yes,Yes,.lock()?,No,,No,No,,A manageable amount,To avoid having to write .lock.unwrap();For performance,No,,No
+2020/12/12 8:11:37 AM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate;I never want to access the data again,Yes,No,,A manageable amount,,,,No
+2020/12/12 8:12:39 AM GMT+11,Yes,Yes,.lock().unwrap(),No,,Yes,No,,A manageable amount,For no-std,No,,No
+2020/12/12 8:13:42 AM GMT+11,Yes,Yes,.lock().unwrap(),No,,No,No,,None,To avoid having to write .lock.unwrap();For performance,No,,
+2020/12/12 8:13:45 AM GMT+11,Yes,Yes,.lock().unwrap(),No,,No,No,,None,To avoid having to write .lock.unwrap();For performance,No,,
+2020/12/12 8:13:57 AM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I want my program to terminate;I want to check and fix the data,Yes,No,,A manageable amount,For async/await,No,,No
+2020/12/12 8:14:08 AM GMT+11,No,No,,,,,,,,,,,
+2020/12/12 8:14:58 AM GMT+11,Yes,Yes,.lock()?,Yes,I never want my program to terminate;I want to access the data again;I want to check and fix the data,Yes,No,,A manageable amount,For performance;For async/await,No,,Yes
+2020/12/12 8:19:20 AM GMT+11,Yes,Yes,.lock().unwrap(),No,,No,No,,A manageable amount,To avoid having to write .lock.unwrap();For performance;For async/await,No,I want to access the data again,No
+2020/12/12 8:19:33 AM GMT+11,Yes,No,.lock().unwrap(),Yes,I never want my program to terminate;I want to access the data again;I want to check and fix the data,No,No,,None,,No,,Yes
+2020/12/12 8:19:42 AM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I want to check and fix the data;I never want to access the data again,Yes,No,,Too much,For async/await;For the sheer joy of messing around with it.,No,,No
+2020/12/12 8:22:42 AM GMT+11,Yes,Yes,.lock().unwrap(),No,I never want to access the data again,No,No,,None,To avoid having to write .lock.unwrap();For performance,No,,No
+2020/12/12 8:23:19 AM GMT+11,Yes,Yes,.lock().unwrap();.lock()?,No,I want my program to terminate;I never want to access the data again,Yes,No,,A manageable amount,To avoid having to write .lock.unwrap();For performance;const fn,No,,Yes
+2020/12/12 8:23:37 AM GMT+11,Yes,Yes,.lock()?,Yes,I want to access the data again;I want to check and fix the data;I never want to access the data again,Yes,No,,A manageable amount,For performance,Yes,"Typically I will want to re-initialize the resource. ""Data"" doesn't typically apply for me, I'm usually working with a network connection or some sort of fs handle",Yes
+2020/12/12 8:23:42 AM GMT+11,Yes,Yes,.lock().unwrap();.lock().unwrap_or_else(PoisonGuard::into_inner),Yes,I want my program to terminate;I never want to access the data again,Yes,No,,A manageable amount,For performance;For async/await,No,,Yes
+2020/12/12 8:23:55 AM GMT+11,Yes,Yes,.lock().unwrap(),No,I want my program to terminate,,No,,None,To avoid having to write .lock.unwrap(),No,,
+2020/12/12 8:26:56 AM GMT+11,Yes,No,.lock().unwrap();.lock()?,Yes,I want to check and fix the data,Yes,No,,A manageable amount,,,,
+2020/12/12 8:28:48 AM GMT+11,Yes,Yes,.lock().unwrap(),No,,No,No,,A manageable amount,For performance,No,,No
+2020/12/12 8:29:07 AM GMT+11,Yes,Yes,.lock().unwrap();.lock()?,No,I never want my program to terminate;I want to check and fix the data,Yes,No,,A manageable amount,For performance,No,,Yes
+2020/12/12 8:30:12 AM GMT+11,Yes,Yes,.lock().unwrap(),No,I want my program to terminate,Yes,No,,None,For async/await,No,I want my program to terminate,Yes
+2020/12/12 8:30:22 AM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I want my program to terminate,No,No,,None,To avoid having to write .lock.unwrap();For performance;For no-std;For async/await,No,,Yes
+2020/12/12 8:30:24 AM GMT+11,Yes,Yes,.lock().unwrap(),No,,No,No,,None,To avoid having to write .lock.unwrap();For performance;For async/await,No,,Yes
+2020/12/12 8:30:35 AM GMT+11,Yes,No,.lock().unwrap(),No,,Yes,No,,A manageable amount,,No,,Yes
+2020/12/12 8:30:45 AM GMT+11,Yes,No,.lock().unwrap();.lock()?,No,I want to access the data again;I want to check and fix the data,No,Yes,,None,,,,
+2020/12/12 8:32:04 AM GMT+11,Yes,Yes,.lock().unwrap();.lock()?,No,I have never considered this behavior,No,No,,A manageable amount,To avoid having to write .lock.unwrap();For performance,No,,No
+2020/12/12 8:34:33 AM GMT+11,No,Yes,.lock()?;just lock(); - mutexes dont fail,No,I never want my program to terminate,No,No,,None,To avoid having to write .lock.unwrap();For performance,No,,No
+2020/12/12 8:37:36 AM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I want my program to terminate;I never want to access the data again,No,No,,A manageable amount,For async/await,No,,Yes
+2020/12/12 8:39:12 AM GMT+11,Yes,Yes,.lock().unwrap();.lock()?,No,I want my program to terminate;I want to access the data again,No,No,,None,To avoid having to write .lock.unwrap();For performance;For async/await,No,,Yes
+2020/12/12 8:40:36 AM GMT+11,Yes,Yes,.lock().unwrap();.lock()?;.lock().unwrap_or_else(PoisonGuard::into_inner),Yes,I want my program to terminate;I want to access the data again;I want to check and fix the data,Yes,No,,None,For performance;For no-std;For async/await,No,,Yes
+2020/12/12 8:41:02 AM GMT+11,Yes,No,.lock()?,No,I never want to access the data again,Yes,Yes,,A manageable amount,For async/await,No,I never want to access the data again,Yes
+2020/12/12 8:45:38 AM GMT+11,Yes,No,.lock().unwrap();.lock()?,No,I want my program to terminate,Yes,No,,A manageable amount,,,,
+2020/12/12 8:45:53 AM GMT+11,Yes,No,.lock().unwrap(),No,I never want to access the data again,Yes,No,,A manageable amount,,,,
+2020/12/12 8:46:52 AM GMT+11,Yes,Yes,.lock().unwrap(),No,I never want my program to terminate,No,No,,A manageable amount,For performance;For async/await,No,I never want my program to terminate;I want to access the data again,No
+2020/12/12 8:47:05 AM GMT+11,No,Yes,,,,,,,,To avoid having to write .lock.unwrap();For performance;For no-std,Yes,I want my program to terminate,No
+2020/12/12 8:49:01 AM GMT+11,Yes,Yes,.lock().unwrap();matching/if let => noop on poison,No,"program termination should be explicit, not implicit, even if it is usually what I wanted",Yes,No,,A manageable amount,For performance,No,,No
+2020/12/12 8:50:19 AM GMT+11,No,Yes,.lock().unwrap();.lock()?,Yes,I want my program to terminate;I never want my program to terminate,No,No,,None,To avoid having to write .lock.unwrap();For performance;For async/await,No,,No
+2020/12/12 8:50:45 AM GMT+11,Yes,No,.lock().unwrap();.lock().unwrap_or_else(PoisonGuard::into_inner),Yes,I want to check and fix the data,No,Yes,It maintains state of a multithreaded websocket server,A manageable amount,To avoid having to write .lock.unwrap(),No,I want to check and fix the data,Yes
+2020/12/12 8:51:44 AM GMT+11,Yes,Yes,.lock()?,No,,No,No,,None,For performance,No,I want my program to terminate,No
+2020/12/12 8:52:30 AM GMT+11,Yes,No,.lock().unwrap(),No,I never want my program to terminate;I want to access the data again;I want to check and fix the data,No,No,,A manageable amount,,No,,Yes
+2020/12/12 8:54:25 AM GMT+11,No,Yes,.lock().unwrap(),No,,,,,,To avoid having to write .lock.unwrap();For performance,No,,No
+2020/12/12 8:59:30 AM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I want my program to terminate;I want to access the data again;I never want to access the data again,No,No,,None,To avoid having to write .lock.unwrap();For async/await,No,I want my program to terminate;I want to access the data again;I never want to access the data again,Yes
+2020/12/12 9:00:31 AM GMT+11,Yes,Yes,.lock().unwrap(),No,,No,No,,None,To avoid having to write .lock.unwrap();For performance,No,I want my program to terminate,No
+2020/12/12 9:00:33 AM GMT+11,Yes,No,.lock().unwrap(),Yes,I want my program to terminate;I never want to access the data again,No,,,None,,,,
+2020/12/12 9:01:08 AM GMT+11,No,Yes,.lock().unwrap(),No,I want my program to terminate;I never want to access the data again,No,No,,None,To avoid having to write .lock.unwrap();For performance,No,,No
+2020/12/12 9:04:16 AM GMT+11,Yes,No,.lock().unwrap();.lock().unwrap_or_else(PoisonGuard::into_inner),Yes,I want to check and fix the data,No,No,,A manageable amount,For async/await,No,I never want my program to terminate;I want to check and fix the data,No
+2020/12/12 9:05:39 AM GMT+11,Yes,No,.lock().unwrap(),Yes,I want my program to terminate;I never want to access the data again,Yes,No,,A manageable amount,For async/await,No,I want my program to terminate,Yes
+2020/12/12 9:07:15 AM GMT+11,Yes,No,.lock().unwrap_or_else(PoisonGuard::into_inner),No,I want my program to terminate;I never want my program to terminate;I want to check and fix the data;I never want to access the data again,No,No,,A manageable amount,,,,
+2020/12/12 9:08:42 AM GMT+11,Yes,Yes,.lock().unwrap();.lock().await,No,,No,No,,None,For async/await,No,,Yes
+2020/12/12 9:11:22 AM GMT+11,Yes,No,.lock().unwrap(),No,,No,No,,None,To avoid having to write .lock.unwrap();For performance,No,,No
+2020/12/12 9:12:29 AM GMT+11,Yes,No,.lock().unwrap(),Yes,I never want my program to terminate;I never want to access the data again,Yes,No,,A manageable amount,,,,
+2020/12/12 9:13:51 AM GMT+11,Yes,Yes,.lock().unwrap();.lock()?,Yes,I want my program to terminate;I never want my program to terminate;I never want to access the data again,Yes,No,,A manageable amount,,No,,
+2020/12/12 9:14:46 AM GMT+11,Yes,Yes,.lock().unwrap();.lock()?,No,I want my program to terminate;I never want my program to terminate;I want to check and fix the data,No,No,,None,To avoid having to write .lock.unwrap();For performance;For async/await,No,,Yes
+2020/12/12 9:17:51 AM GMT+11,Yes,No,.lock()?,Yes,I never want my program to terminate;I want to access the data again;I want to check and fix the data,No,No,,None,,No,,Yes
+2020/12/12 9:18:02 AM GMT+11,Yes,No,.lock().unwrap(),Yes,I want my program to terminate,Yes,No,,A manageable amount,,,,
+2020/12/12 9:18:17 AM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate,No,No,,A manageable amount,,,,
+2020/12/12 9:20:32 AM GMT+11,Yes,Yes,.lock().unwrap(),No,,No,No,,A manageable amount,For performance;For async/await,No,,No
+2020/12/12 9:20:42 AM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate,Yes,No,,A manageable amount,,,,Yes
+2020/12/12 9:23:42 AM GMT+11,Yes,Yes,.lock().unwrap();.lock()?,Yes,It depends if I know whether the data can be left in an invalid state in the first place,Yes,No,,A manageable amount,To avoid having to write .lock.unwrap();For async/await,No,,No
+2020/12/12 9:25:29 AM GMT+11,Yes,No,.lock().unwrap(),No,I want to access the data again,Yes,No,,None,,,,Yes
+2020/12/12 9:28:32 AM GMT+11,No,Yes,.lock().unwrap(),No,I want my program to terminate,No,No,,None,For performance;For no-std;For async/await,No,,No
+2020/12/12 9:29:14 AM GMT+11,Yes,No,.lock().unwrap(),No,I want to check and fix the data;I never want to access the data again,No,No,,None,,,,
+2020/12/12 9:31:33 AM GMT+11,No,Yes,,,,,,,,For performance;For async/await,No,I never want my program to terminate;I want to check and fix the data;I never want to access the data again,
+2020/12/12 9:32:21 AM GMT+11,Yes,No,.lock().unwrap(),No,,No,No,,None,,No,,Yes
+2020/12/12 9:34:01 AM GMT+11,Yes,No,.lock()?,No,,No,No,,None,,,,
+2020/12/12 9:34:17 AM GMT+11,Yes,No,.lock().unwrap(),No,,No,No,,None,,,,
+2020/12/12 9:35:53 AM GMT+11,Yes,Yes,.lock().unwrap(),No,I want to access the data again,No,No,,None,For async/await,No,I never want my program to terminate;I want to access the data again,Yes
+2020/12/12 9:36:22 AM GMT+11,Yes,Yes,.lock().unwrap(),No,I want my program to terminate,Yes,No,,None,because a dependency requires using them,No,,Yes
+2020/12/12 9:37:16 AM GMT+11,Yes,Yes,.lock()?,No,I never want my program to terminate;I want to access the data again,No,No,,None,To avoid having to write .lock.unwrap();For async/await,No,,No
+2020/12/12 9:37:22 AM GMT+11,Yes,Yes,.lock().unwrap();.lock()?,No,,No,No,,None,For async/await,No,,No
+2020/12/12 9:38:51 AM GMT+11,No,Yes,.lock()?,No,I never want my program to terminate;I never want to access the data again,No,No,,None,For performance;For async/await,No,,No
+2020/12/12 9:39:00 AM GMT+11,Yes,Yes,.lock().unwrap();.lock()?,No,I want my program to terminate,No,No,,A manageable amount,To avoid having to write .lock.unwrap();For performance,No,,Yes
+2020/12/12 9:41:57 AM GMT+11,Yes,No,.lock().unwrap(),Yes,I want my program to terminate,Yes,No,,None,,,,
+2020/12/12 9:41:58 AM GMT+11,Yes,Yes,.lock().unwrap(),No,I want to access the data again,No,No,,A manageable amount,To avoid having to write .lock.unwrap();For performance,No,I want my program to terminate;I want to access the data again,No
+2020/12/12 9:44:57 AM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate;I want to check and fix the data,No,No,,None,,,,Yes
+2020/12/12 9:45:41 AM GMT+11,Yes,Yes,.lock().unwrap(),No,I want my program to terminate,No,No,,None,For performance,No,I want my program to terminate,Yes
+2020/12/12 9:49:43 AM GMT+11,Yes,No,.lock().unwrap(),Yes,I want my program to terminate;I never want to access the data again,No,No,,None,,,,
+2020/12/12 9:50:08 AM GMT+11,Yes,Yes,.lock().unwrap();.lock()?,Yes,I want my program to terminate,No,No,,A manageable amount,To avoid having to write .lock.unwrap();For performance;For async/await,No,I never want to access the data again,No
+2020/12/12 9:51:14 AM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate;I never want to access the data again,No,No,,None,,,I want my program to terminate;I never want to access the data again,Yes
+2020/12/12 9:54:15 AM GMT+11,Yes,Yes,.lock().unwrap(),No,I want my program to terminate;I never want to access the data again,No,No,,A manageable amount,For performance;For async/await,No,I want my program to terminate;I never want to access the data again,Yes
+2020/12/12 9:56:21 AM GMT+11,Yes,No,.lock()?,No,,No,No,,A manageable amount,,,,
+2020/12/12 9:58:08 AM GMT+11,Yes,Yes,.lock().unwrap();.lock()?,No,,Yes,Yes,Wrapped I side my error types,A manageable amount,For async/await,No,,Yes
+2020/12/12 9:58:31 AM GMT+11,No,Yes,.lock().unwrap(),No,I want to access the data again;I don't want the lock to get poisoned,No,No,,None,To avoid having to write .lock.unwrap();For performance;For async/await,No,,No
+2020/12/12 9:59:47 AM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate;I want to check and fix the data,Yes,No,,A manageable amount,,,,
+2020/12/12 10:00:17 AM GMT+11,Yes,No,.lock().unwrap(),Yes,I want my program to terminate,No,No,,A manageable amount,,No,I want my program to terminate,No
+2020/12/12 10:00:22 AM GMT+11,Yes,Yes,.lock().unwrap(),No,,No,No,,A manageable amount,For performance,No,I never want to access the data again,No
+2020/12/12 10:02:03 AM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate,No,No,,A manageable amount,,,,
+2020/12/12 10:02:37 AM GMT+11,No,Yes,.lock()?,Yes,I want my program to terminate,No,No,,None,To avoid having to write .lock.unwrap();For async/await,No,,No
+2020/12/12 10:02:50 AM GMT+11,Yes,Yes,.lock()?,No,I want my program to terminate;I never want to access the data again,No,No,,A manageable amount,For performance;For no-std,No,,No
+2020/12/12 10:03:30 AM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate;I want to access the data again;I want to check and fix the data,Yes,,,A manageable amount,,,,
+2020/12/12 10:04:17 AM GMT+11,No,Yes,.lock().unwrap(),Yes,I want my program to terminate,No,No,,,To avoid having to write .lock.unwrap();For performance;For async/await,No,I want my program to terminate,
+2020/12/12 10:06:59 AM GMT+11,Yes,Yes,.lock().unwrap(),No,I want my program to terminate,No,No,,None,To avoid having to write .lock.unwrap();For performance;For no-std;For async/await,No,,No
+2020/12/12 10:09:05 AM GMT+11,Yes,Yes,.lock().unwrap();.lock()?,No,I want my program to terminate,No,No,,A manageable amount,To avoid having to write .lock.unwrap(),Yes,I want my program to terminate,Yes
+2020/12/12 10:10:59 AM GMT+11,Yes,Yes,.lock().unwrap();.lock()?,No,,,,,,To avoid having to write .lock.unwrap();For performance,No,,Yes
+2020/12/12 10:11:54 AM GMT+11,Yes,Yes,.lock().unwrap_or_else(PoisonGuard::into_inner),Yes,I want my program to terminate,No,No,,None,For no-std;For async/await,No,,Yes
+2020/12/12 10:12:52 AM GMT+11,Yes,No,.lock().unwrap();.lock()?,No,I never want my program to terminate;I never want to access the data again,Yes,No,,A manageable amount,,,,Yes
+2020/12/12 10:13:18 AM GMT+11,No,Yes,,,,,,,,To avoid having to write .lock.unwrap();For performance;For no-std;For async/await,No,I want my program to terminate,Yes
+2020/12/12 10:13:39 AM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate;I never want my program to terminate;I want to check and fix the data,Yes,No,,A manageable amount,,No,,Yes
+2020/12/12 10:14:32 AM GMT+11,No,Yes,.lock().unwrap(),Yes,I want my program to terminate,No,No,,A manageable amount,For performance,No,I want my program to terminate,No
+2020/12/12 10:14:50 AM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate,Yes,No,,A manageable amount,,,,Yes
+2020/12/12 10:18:41 AM GMT+11,Yes,No,.lock()?,No,,No,No,,A manageable amount,For async/await,No,I want to access the data again,No
+2020/12/12 10:19:18 AM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I want my program to terminate;I never want my program to terminate;I want to access the data again;I never want to access the data again,Yes,Yes,,None,To avoid having to write .lock.unwrap();For performance;For async/await,No,,Yes
+2020/12/12 10:19:42 AM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I want my program to terminate,No,No,,A manageable amount,For performance;For no-std,No,I want my program to terminate;I never want to access the data again,
+2020/12/12 10:20:02 AM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate;I want to check and fix the data;I never want to access the data again,No,No,,A manageable amount,For no-std,No,I want my program to terminate;I want to check and fix the data;I never want to access the data again,Yes
+2020/12/12 10:20:08 AM GMT+11,No,Yes,.lock()?,No,I want to access the data again;I want to check and fix the data,No,No,,None,To avoid having to write .lock.unwrap(),No,I want to access the data again;I want to check and fix the data,Yes
+2020/12/12 10:21:44 AM GMT+11,Yes,Yes,.lock().unwrap(),No,I want my program to terminate,No,No,,A manageable amount,To avoid having to write .lock.unwrap();For performance;For async/await,No,I want my program to terminate,No
+2020/12/12 10:22:34 AM GMT+11,Yes,Yes,.lock().unwrap();.lock()?,Yes,I never want my program to terminate;I want to access the data again,No,No,,None,To avoid having to write .lock.unwrap();For performance;For async/await,No,,No
+2020/12/12 10:22:58 AM GMT+11,Yes,No,.lock().unwrap(),No,,Yes,No,,None,,No,,Yes
+2020/12/12 10:24:33 AM GMT+11,Yes,Yes,.lock().unwrap();.lock()?,No,I never want my program to terminate;I want to check and fix the data,No,No,,None,For performance,No,,No
+2020/12/12 10:25:48 AM GMT+11,Yes,No,.lock().unwrap(),Yes,I want my program to terminate,Yes,No,,None,For no-std,No,,Yes
+2020/12/12 10:25:52 AM GMT+11,No,Yes,,,,,,,,For async/await,No,,No
+2020/12/12 10:28:47 AM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I want my program to terminate,No,No,,A manageable amount,To avoid having to write .lock.unwrap();For performance,No,I want my program to terminate,No
+2020/12/12 10:29:05 AM GMT+11,Yes,Yes,.lock().unwrap(),No,I never want my program to terminate;I want to check and fix the data,Yes,No,,A manageable amount,Missing features in std,No,I never want my program to terminate;I want to check and fix the data,Yes
+2020/12/12 10:32:49 AM GMT+11,Yes,No,.lock().unwrap(),No,,No,No,,A manageable amount,,,,
+2020/12/12 10:35:55 AM GMT+11,No,Yes,.lock(),No,I want my program to terminate,No,No,,None,To avoid having to write .lock.unwrap(),No,I want my program to terminate,Yes
+2020/12/12 10:36:13 AM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate;I want to check and fix the data,Yes,,,A manageable amount,,,,
+2020/12/12 10:37:07 AM GMT+11,Yes,Yes,.lock().unwrap();.lock()?,No,,,No,,None,To avoid having to write .lock.unwrap();For async/await,No,,
+2020/12/12 10:37:21 AM GMT+11,Yes,Yes,.lock().unwrap(),No,I want my program to terminate,Yes,No,,A manageable amount,For performance;For async/await,No,I want my program to terminate,Yes
+2020/12/12 10:38:32 AM GMT+11,No,Yes,,,,,,,,To avoid having to write .lock.unwrap();For performance;For no-std,No,,No
+2020/12/12 10:39:11 AM GMT+11,No,No,,,,,,,,,,,
+2020/12/12 10:42:16 AM GMT+11,No,No,,,,,,,,,,,
+2020/12/12 10:43:19 AM GMT+11,Yes,Yes,.lock().unwrap(),No,I want my program to terminate;I never want to access the data again,Yes,No,,A manageable amount,For performance;upstream libraries use it in their API,No,I want my program to terminate;I never want to access the data again,Yes
+2020/12/12 10:45:46 AM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate,Yes,No,,None,,No,,No
+2020/12/12 10:48:06 AM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate;I never want to access the data again,,No,,A manageable amount,,,,
+2020/12/12 10:51:44 AM GMT+11,Yes,No,.lock().unwrap(),No,,No,No,,None,,,,
+2020/12/12 10:52:10 AM GMT+11,Yes,Yes,.lock().unwrap();.lock()?,No,I want my program to terminate,Yes,No,,A manageable amount,For performance;For async/await,No,,No
+2020/12/12 10:53:08 AM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate;I never want to access the data again,No,No,,A manageable amount,,No,I want my program to terminate;I never want to access the data again,Yes
+2020/12/12 10:53:29 AM GMT+11,No,Yes,.lock()?,Yes,I want my program to terminate,No,No,,None,For performance,No,,No
+2020/12/12 10:53:40 AM GMT+11,No,Yes,.lock().unwrap();.lock()?,No,,No,No,,None,For performance;For async/await,No,I never want my program to terminate;I want to access the data again;I want to check and fix the data,Yes
+2020/12/12 10:58:04 AM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate,Yes,No,,A manageable amount,,,,
+2020/12/12 10:59:30 AM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate,Yes,No,,A manageable amount,,,,
+2020/12/12 11:01:03 AM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I want to access the data again;I want to check and fix the data,No,No,,A manageable amount,To avoid having to write .lock.unwrap();For no-std,No,,Yes
+2020/12/12 11:03:18 AM GMT+11,Yes,Yes,.lock().unwrap(),No,I want my program to terminate,Yes,No,,None,For async/await,No,,No
+2020/12/12 11:04:09 AM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I want my program to terminate;I never want to access the data again,No,No,,None,To avoid having to write .lock.unwrap();For no-std,No,,Yes
+2020/12/12 11:04:10 AM GMT+11,Yes,No,.lock().unwrap_or_else(PoisonGuard::into_inner),Yes,I want my program to terminate;I want to check and fix the data,Yes,No,,A manageable amount,,No,,Yes
+2020/12/12 11:05:58 AM GMT+11,Yes,Yes,.lock().unwrap(),No,,No,No,,A manageable amount,For async/await,No,I want to check and fix the data,Yes
+2020/12/12 11:06:35 AM GMT+11,Yes,No,.lock().unwrap(),Yes,I want my program to terminate,No,No,,A manageable amount,I don't,No,I want my program to terminate,No
+2020/12/12 11:07:42 AM GMT+11,Yes,Yes,.lock().unwrap();.lock()?,No,I want to check and fix the data,No,No,,A manageable amount,For performance;For async/await,No,,No
+2020/12/12 11:07:47 AM GMT+11,Yes,No,.lock().unwrap(),Yes,I want my program to terminate,Yes,No,,None,,No,,Yes
+2020/12/12 11:12:28 AM GMT+11,Yes,Yes,.lock().unwrap(),No,I want my program to terminate;I never want to access the data again,No,No,,A manageable amount,For performance;For no-std,No,I want my program to terminate;I never want to access the data again,No
+2020/12/12 11:14:27 AM GMT+11,Yes,Yes,.lock().unwrap();.lock()?,No,,No,No,,A manageable amount,For performance;For no-std;For async/await,Yes,I want my program to terminate;I want to check and fix the data,No
+2020/12/12 11:14:47 AM GMT+11,Yes,Yes,.lock().unwrap(),No,I want my program to terminate,No,No,,A manageable amount,To avoid having to write .lock.unwrap();For performance,No,,No
+2020/12/12 11:16:44 AM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate,No,No,,A manageable amount,,,,
+2020/12/12 11:16:55 AM GMT+11,Yes,Yes,.lock().unwrap(),No,I never want to access the data again,Yes,No,,None,For performance;For async/await,No,I never want to access the data again,Yes
+2020/12/12 11:17:22 AM GMT+11,Yes,Yes,.lock().unwrap(),No,I want my program to terminate;I use panic=abort so I never have poisoned locks,No,No,,A manageable amount,For performance,No,I use panic=abort so this is not an issue,No
+2020/12/12 11:20:57 AM GMT+11,Yes,No,.lock().unwrap(),Yes,I want my program to terminate;I want to check and fix the data,No,No,,A manageable amount,,,,
+2020/12/12 11:25:24 AM GMT+11,Yes,Yes,.lock().unwrap(),No,,No,No,,None,To avoid having to write .lock.unwrap();For performance,No,,No
+2020/12/12 11:25:30 AM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I want my program to terminate,No,No,,None,For performance;For no-std,No,,No
+2020/12/12 11:25:58 AM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I want my program to terminate,No,No,,A manageable amount,To avoid having to write .lock.unwrap(),No,,Yes
+2020/12/12 11:26:43 AM GMT+11,Yes,Yes,.lock().unwrap();.lock()?,No,I never want to access the data again,No,No,,A manageable amount,For performance,No,,No
+2020/12/12 11:30:58 AM GMT+11,Yes,Yes,.lock().unwrap();.lock()?,No,,No,No,,None,To avoid having to write .lock.unwrap();For performance;For async/await,No,,Yes
+2020/12/12 11:31:29 AM GMT+11,Yes,Yes,.lock().unwrap(),No,I never want my program to terminate;I never want to access the data again,No,No,,None,To avoid having to write .lock.unwrap();For performance;For async/await,No,,No
+2020/12/12 11:33:45 AM GMT+11,Yes,No,.lock()?,Yes,I want my program to terminate,No,No,,A manageable amount,,No,,Yes
+2020/12/12 11:36:00 AM GMT+11,Yes,Yes,.lock().unwrap(),No,,No,Yes,,None,For performance;For no-std;For async/await,No,,
+2020/12/12 11:36:13 AM GMT+11,Yes,No,.lock().unwrap();.lock()?,Yes,I want my program to terminate,No,No,,None,For async/await,No,I want my program to terminate,Yes
+2020/12/12 11:40:22 AM GMT+11,Yes,Yes,.lock().unwrap(),No,,No,No,,A manageable amount,To avoid having to write .lock.unwrap();For performance,Yes,Situational,No
+2020/12/12 11:41:32 AM GMT+11,Yes,No,.lock().unwrap(),Yes,I want to check and fix the data,No,No,,None,,,,
+2020/12/12 11:44:56 AM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate,No,No,,None,,,,
+2020/12/12 11:46:05 AM GMT+11,Yes,No,.lock().unwrap(),No,I never want my program to terminate;I never want to access the data again,Yes,Yes,,Too much,For performance;For no-std,No,,Yes
+2020/12/12 11:47:42 AM GMT+11,Yes,Yes,.lock().unwrap(),No,I want my program to terminate,Yes,No,,A manageable amount,For performance;For async/await,No,,Yes
+2020/12/12 11:50:53 AM GMT+11,Yes,No,.lock().unwrap(),Yes,I never want my program to terminate;I want to access the data again,No,No,,A manageable amount,To avoid having to write .lock.unwrap();For performance;For async/await,No,,No
+2020/12/12 11:51:39 AM GMT+11,Yes,Yes,.lock().unwrap();.lock()?,No,I want my program to terminate,No,Yes,I'm too high to understand this,None,For performance;For async/await,No,I want my program to terminate,No
+2020/12/12 12:03:25 PM GMT+11,Yes,Yes,.lock().unwrap(),No,I want my program to terminate,No,No,,None,For no-std,No,,Yes
+2020/12/12 12:05:21 PM GMT+11,No,No,,No,,Yes,No,,,,,,
+2020/12/12 12:05:55 PM GMT+11,Yes,Yes,.lock().unwrap(),No,I want my program to terminate,No,No,,None,For no-std;For async/await,No,,No
+2020/12/12 12:05:59 PM GMT+11,No,Yes,.lock().unwrap(),No,I want my program to terminate;I never want to access the data again,No,No,,None,To avoid having to write .lock.unwrap();For performance,No,I want my program to terminate;I never want to access the data again,Yes
+2020/12/12 12:07:31 PM GMT+11,Yes,Yes,.lock().unwrap(),No,I want my program to terminate,Yes,Yes,Arc<Mutex<Thingy>>,Too much,For performance,No,I want my program to terminate,Yes
+2020/12/12 12:10:30 PM GMT+11,Yes,No,.lock().unwrap();.lock()?,No,,Yes,Yes,"Caveat: the ""public API"" of my projects has a sole consumer of myself (and maaybe a couple if close friends). It's not on crates.io or similar.
+
+Occasionally I use getters `fn get_foo(&self)->&Foo`.
+Then sometimes I happen to refactor the code to make it work in multithreaded environment and that puts the Foo behind a mutex. Naturally, I can no longer return a reference (nor a guard, because borrow checker), so I'm returning a &Mutex.
+That's still somewhat awkward though, since i cannot easily return references to sub-fields of Foo... 
+
+That said, so far it's not been too big of a deal, just a minor annoyance.
+I think at least once I did some RefCell hackery to hide the mutex from the API, but 1) this was more of a test to see if i can than a solving an actual problem and 2) I cannot really recall the specifics right now..",None,,No,,
+2020/12/12 12:12:34 PM GMT+11,Yes,No,.lock().unwrap(),Yes,I want my program to terminate,Yes,No,,A manageable amount,,No,,Yes
+2020/12/12 12:14:46 PM GMT+11,Yes,Yes,.lock().unwrap(),No,I want my program to terminate;I never want to access the data again,No,No,,None,To avoid having to write .lock.unwrap();For performance;For async/await,No,,No
+2020/12/12 12:19:16 PM GMT+11,Yes,No,.lock().unwrap(),Yes,I want my program to terminate,Yes,No,,A manageable amount,,No,,Yes
+2020/12/12 12:21:39 PM GMT+11,Yes,Yes,.lock().unwrap(),No,I want to access the data again,No,No,,None,To avoid having to write .lock.unwrap();For async/await,No,,No
+2020/12/12 12:22:36 PM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate,No,No,,None,For async/await,No,I never want my program to terminate,No
+2020/12/12 12:23:19 PM GMT+11,Yes,No,.lock().unwrap();.lock()?,No,,No,No,,A manageable amount,,,,
+2020/12/12 12:25:32 PM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate;I want to check and fix the data,Yes,No,,A manageable amount,For async/await,No,,Yes
+2020/12/12 12:26:06 PM GMT+11,Yes,Yes,.lock().unwrap(),No,I want my program to terminate,No,No,,None,For async/await,No,I want my program to terminate,No
+2020/12/12 12:28:31 PM GMT+11,Yes,Yes,.lock().unwrap(),No,I want my program to terminate,No,No,,None,For performance;For async/await,No,,
+2020/12/12 12:29:27 PM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I want to check and fix the data,Yes,No,,A manageable amount,For async/await,No,I want my program to terminate;I want to check and fix the data,Yes
+2020/12/12 12:31:37 PM GMT+11,Yes,No,.lock().unwrap(),Yes,I never want to access the data again,Yes,Yes,,Too much,For async/await,No,I never want to access the data again,Yes
+2020/12/12 12:42:11 PM GMT+11,Yes,No,.lock().unwrap(),No,,No,No,,A manageable amount,For async/await,No,I want my program to terminate,Yes
+2020/12/12 12:42:51 PM GMT+11,Yes,No,.lock().unwrap(),No,,No,No,,A manageable amount,For performance;For async/await,No,I want to check and fix the data,Yes
+2020/12/12 12:48:53 PM GMT+11,Yes,No,.lock().unwrap();.lock()?,No,,No,Yes,error enum variant,A manageable amount,For performance;For no-std;For async/await,No,,Yes
+2020/12/12 12:50:28 PM GMT+11,Yes,Yes,.lock().unwrap();.lock()?,No,,No,No,,None,For async/await,No,,Yes
+2020/12/12 12:54:54 PM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I want my program to terminate;I want to access the data again,No,No,,A manageable amount,To avoid having to write .lock.unwrap();For performance;For async/await,No,I want my program to terminate;I want to access the data again,No
+2020/12/12 1:18:36 PM GMT+11,Yes,Yes,,Yes,I never want my program to terminate,No,No,,None,For performance,No,,No
+2020/12/12 1:18:47 PM GMT+11,No,Yes,.lock().unwrap(),No,I want to check and fix the data,No,No,,None,To avoid having to write .lock.unwrap();For performance;For async/await,No,,No
+2020/12/12 1:27:14 PM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate,No,No,,A manageable amount,,No,I want my program to terminate,No
+2020/12/12 1:27:30 PM GMT+11,Yes,No,.lock().unwrap(),No,,No,No,,A manageable amount,,,,
+2020/12/12 1:27:39 PM GMT+11,Yes,Yes,.lock()?,No,I want to access the data again;I want to check and fix the data,,No,,A manageable amount,To avoid having to write .lock.unwrap();For performance;For no-std;For async/await,No,I want to access the data again;I want to check and fix the data,Yes
+2020/12/12 1:28:55 PM GMT+11,Yes,Yes,.lock()?,Yes,I want my program to terminate,Yes,No,,A manageable amount,To avoid having to write .lock.unwrap();For performance;For no-std;For async/await,No,I never want my program to terminate,Yes
+2020/12/12 1:39:51 PM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate,No,No,,A manageable amount,,,I want my program to terminate,No
+2020/12/12 1:40:21 PM GMT+11,No,Yes,.lock().unwrap(),Yes,I want my program to terminate;I want to check and fix the data,Yes,No,,None,For no-std;For async/await,No,I want my program to terminate;I want to check and fix the data,Yes
+2020/12/12 1:40:22 PM GMT+11,Yes,No,.lock().unwrap(),No,,No,No,,None,,No,,
+2020/12/12 1:45:53 PM GMT+11,Yes,Yes,.lock()?,No,,No,No,,None,For performance,No,,
+2020/12/12 1:47:03 PM GMT+11,Yes,No,.lock().unwrap();.lock()?,No,,Yes,No,,None,,No,,Yes
+2020/12/12 1:55:15 PM GMT+11,Yes,Yes,.lock().unwrap(),No,I never want my program to terminate;I want to access the data again;I want to check and fix the data,No,Yes,,A manageable amount,To avoid having to write .lock.unwrap();For performance,No,,Yes
+2020/12/12 1:56:43 PM GMT+11,Yes,No,.lock().unwrap_or_else(PoisonGuard::into_inner),Yes,I want to check and fix the data,Yes,No,,None,,,,
+2020/12/12 1:56:44 PM GMT+11,Yes,No,.lock().unwrap(),No,,No,No,,A manageable amount,,No,,Yes
+2020/12/12 1:56:58 PM GMT+11,Yes,Yes,.lock().unwrap(),No,,No,No,,None,For performance,No,I want my program to terminate,Yes
+2020/12/12 2:00:32 PM GMT+11,Yes,No,.lock().unwrap(),Yes,I never want my program to terminate;I want to check and fix the data,Yes,No,,A manageable amount,,,,
+2020/12/12 2:01:23 PM GMT+11,No,Yes,.lock().unwrap(),Yes,I never want my program to terminate;I want to access the data again;I want to check and fix the data,No,No,N/A,None,For performance;For no-std,No,I never want my program to terminate;I want to access the data again;I want to check and fix the data,No
+2020/12/12 2:03:55 PM GMT+11,No,Yes,.lock().unwrap(),No,I want my program to terminate,No,No,Arc<Mutex<T>>,None,To avoid having to write .lock.unwrap();For performance;For async/await,No,I want my program to terminate,No
+2020/12/12 2:09:06 PM GMT+11,Yes,No,.lock().unwrap(),Yes,I want to log the data and then terminate,Yes,No,,A manageable amount,,,,
+2020/12/12 2:09:56 PM GMT+11,Yes,No,.lock().unwrap(),No,I want to access the data again,No,No,,A manageable amount,To avoid having to write .lock.unwrap();For performance,No,,Yes
+2020/12/12 2:10:59 PM GMT+11,Yes,Yes,.lock()?,Yes,I want my program to terminate;I never want to access the data again,Yes,No,,None,For performance;For async/await,No,I want my program to terminate;I never want to access the data again,Yes
+2020/12/12 2:12:43 PM GMT+11,Yes,No,.lock().unwrap();.lock()?,Yes,I never want my program to terminate;I want to access the data again,No,Yes,pub type Lines = Arc<Mutex<String>>;,A manageable amount,,,,
+2020/12/12 2:17:58 PM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate;I want to check and fix the data,No,No,,A manageable amount,,,,Yes
+2020/12/12 2:39:32 PM GMT+11,Yes,Yes,.lock().unwrap(),No,I want my program to terminate,No,,,None,For performance,No,I want my program to terminate,No
+2020/12/12 2:41:01 PM GMT+11,Yes,Yes,.lock().unwrap(),Yes,Locking poisoned locks should panic,No,Yes,"enum MyGuard<'a, T> {
+    Guard(MutexGuard<'a, T>),
+    Ref(&'a mut T)
+}",None,For performance,No,,No
+2020/12/12 2:43:49 PM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I want to access the data again,No,No,,None,To avoid having to write .lock.unwrap();For performance;For async/await,No,I never want my program to terminate;I want to access the data again,No
+2020/12/12 2:46:52 PM GMT+11,Yes,Yes,.lock()?,No,,No,No,,None,To avoid having to write .lock.unwrap();For performance,No,,No
+2020/12/12 2:57:41 PM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I want my program to terminate;I never want my program to terminate;I never want to access the data again,Yes,No,,A manageable amount,For performance;For no-std,No,,Yes
+2020/12/12 2:57:56 PM GMT+11,Yes,No,.lock().unwrap();.lock()?,No,I want my program to terminate;I never want my program to terminate;I want to access the data again;I want to check and fix the data,Yes,No,,None,,,,
+2020/12/12 3:03:06 PM GMT+11,Yes,Yes,.lock().unwrap(),No,I want my program to terminate,No,No,,A manageable amount,For async/await,No,I want my program to terminate,No
+2020/12/12 3:04:31 PM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I never want to access the data again,Yes,No,,None,For performance,No,,Yes
+2020/12/12 3:12:13 PM GMT+11,Yes,Yes,.lock().unwrap(),No,I want to check and fix the data,No,No,,A manageable amount,To avoid having to write .lock.unwrap(),No,I want to check and fix the data,Yes
+2020/12/12 3:15:56 PM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I want my program to terminate;I want to access the data again,No,No,,A manageable amount,To avoid having to write .lock.unwrap();For async/await,No,I want my program to terminate;I want to access the data again,No
+2020/12/12 3:21:49 PM GMT+11,No,Yes,,,,,,,,To avoid having to write .lock.unwrap();For async/await;For compatibility with other dependencies (serenity),No,,Yes
+2020/12/12 3:22:32 PM GMT+11,Yes,Yes,.lock().unwrap(),No,I want my program to terminate,No,Yes,In the form of Arc<Mutex<XXX>> return type,A manageable amount,For performance,No,I want my program to terminate,Yes
+2020/12/12 3:35:46 PM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I never want my program to terminate;I want to access the data again,No,No,,None,For async/await,No,I never want my program to terminate;I want to access the data again,No
+2020/12/12 3:36:52 PM GMT+11,Yes,Yes,.lock().unwrap(),No,,No,No,,A manageable amount,For async/await,No,,No
+2020/12/12 3:50:54 PM GMT+11,No,Yes,.lock().unwrap(),No,I want my program to terminate,No,No,,None,To avoid having to write .lock.unwrap();For performance;For async/await,No,I want my program to terminate,Yes
+2020/12/12 3:52:35 PM GMT+11,Yes,No,.lock().unwrap();.lock()?,No,I want my program to terminate,,No,,A manageable amount,,,,
+2020/12/12 3:53:31 PM GMT+11,Yes,No,.lock().unwrap(),No,I never thought about it. It was a school assignment to learn about basic synchronization patterns.,No,No,,None,,,,
+2020/12/12 4:12:38 PM GMT+11,Yes,No,.lock().unwrap(),No,I want to check and fix the data,No,No,,A manageable amount,,,,
+2020/12/12 4:12:42 PM GMT+11,Yes,Yes,.lock().unwrap(),No,I want my program to terminate,No,Yes,,A manageable amount,To avoid having to write .lock.unwrap();For performance,No,I want my program to terminate,No
+2020/12/12 4:13:21 PM GMT+11,No,Yes,.lock().unwrap(),No,,No,No,,None,To avoid having to write .lock.unwrap(),No,I want my program to terminate,No
+2020/12/12 4:20:39 PM GMT+11,No,Yes,.lock().unwrap(),No,I want my program to terminate,No,No,,None,To avoid having to write .lock.unwrap();For performance;For async/await,No,I want my program to terminate,Yes
+2020/12/12 4:21:48 PM GMT+11,Yes,No,.lock().unwrap(),Yes,I want my program to terminate,Yes,No,,A manageable amount,,,,
+2020/12/12 4:23:07 PM GMT+11,Yes,Yes,.lock().unwrap(),No,I want my program to terminate,,Yes,,A manageable amount,For async/await,,,
+2020/12/12 4:23:40 PM GMT+11,Yes,Yes,.lock()?,Yes,"I want my program to terminate;I use panic=abort, so a lock can never get poisoned, because a panic always terminates the entire program. If I wanted to recover from something, I wouldn't use a panic.",No,No,,None,For performance;For async/await,No,I want my program to terminate,No
+2020/12/12 4:26:35 PM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I never want my program to terminate;I never want to access the data again,Yes,No,,A manageable amount,For no-std,Yes,I never want my program to terminate;I never want to access the data again,Yes
+2020/12/12 4:32:26 PM GMT+11,Yes,Yes,.lock().unwrap(),No,,No,No,,A manageable amount,For performance;For no-std,No,,No
+2020/12/12 4:47:49 PM GMT+11,Yes,Yes,.lock().unwrap_or_else(PoisonGuard::into_inner),Yes,I want to check and fix the data,Yes,No,,A manageable amount,For performance;For async/await,No,I want to check and fix the data,Yes
+2020/12/12 4:55:32 PM GMT+11,Yes,Yes,.lock().unwrap(),No,I want my program to terminate;I never want to access the data again,Yes,No,,A manageable amount,For performance;For async/await,No,I want my program to terminate,Yes
+2020/12/12 4:58:25 PM GMT+11,Yes,No,.lock().unwrap_or_else(PoisonGuard::into_inner),Yes,I never want my program to terminate;I want to access the data again;I want to check and fix the data,No,Yes,"MutexGuard<GlobalRNG>, that sort of thing",Too much,,,,
+2020/12/12 5:07:29 PM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate,Yes,Yes,,Too much,,No,,
+2020/12/12 5:18:16 PM GMT+11,Yes,Yes,".lock().unwrap();just `.lock()` for non poisoning locks, or once I actually handled it",Yes,I want my program to terminate;I want to access the data again;I want to check and fix the data,No,No,,A manageable amount,To avoid having to write .lock.unwrap();For performance;For async/await,No,I want my program to terminate;I want to access the data again;I want to check and fix the data,Yes
+2020/12/12 5:19:05 PM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate,No,No,,None,,,,
+2020/12/12 5:21:08 PM GMT+11,No,Yes,.lock()?,Yes,I want to access the data again,No,No,,None,To avoid having to write .lock.unwrap(),No,I want to access the data again,
+2020/12/12 5:28:08 PM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate;I want to access the data again;I want to check and fix the data,No,No,,A manageable amount,,,,
+2020/12/12 5:35:40 PM GMT+11,Yes,No,.lock().unwrap(),Yes,I never want my program to terminate,,No,,A manageable amount,,,,
+2020/12/12 5:39:10 PM GMT+11,Yes,No,.lock().unwrap(),No,I want to check and fix the data,No,No,,None,For performance;For async/await,No,,
+2020/12/12 5:41:29 PM GMT+11,Yes,Yes,.lock().unwrap(),No,,No,No,,A manageable amount,For performance;For async/await,No,,Yes
+2020/12/12 5:54:07 PM GMT+11,Yes,Yes,.lock().unwrap(),No,I want my program to terminate,Yes,No,,A manageable amount,For performance;For async/await,No,I want my program to terminate,Yes
+2020/12/12 5:54:23 PM GMT+11,Yes,Yes,.lock().unwrap();.lock()?,No,I want my program to terminate,No,No,,None,For async/await,No,I want my program to terminate,No
+2020/12/12 5:55:07 PM GMT+11,Yes,No,.lock().unwrap(),Yes,I want my program to terminate;I want to check and fix the data,Yes,No,,A manageable amount,For async/await,No,I want my program to terminate;I want to access the data again,Yes
+2020/12/12 5:55:11 PM GMT+11,Yes,No,.lock().unwrap(),No,I want to check and fix the data;I never want to access the data again,No,No,,None,To avoid having to write .lock.unwrap();For performance;For async/await,No,,Yes
+2020/12/12 6:01:59 PM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I want my program to terminate;I never want to access the data again,No,No,,None,To avoid having to write .lock.unwrap();For performance;For async/await,No,,No
+2020/12/12 6:06:35 PM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate,No,No,,A manageable amount,,,,
+2020/12/12 6:12:29 PM GMT+11,Yes,No,match mutex.lock() { /*...*/},Yes,I never want my program to terminate;I want to check and fix the data,Yes,No,,A manageable amount,For async/await,No,I never want my program to terminate;I want to check and fix the data,Yes
+2020/12/12 6:18:40 PM GMT+11,Yes,Yes,.lock().unwrap(),Yes,"I want the current behavior (to be able to propagate the panic, or, in rarer circumstances, examine the data)",Yes,No,,A manageable amount,For performance,No,,Yes
+2020/12/12 6:28:41 PM GMT+11,Yes,Yes,.lock().unwrap();.lock()?,Yes,I want my program to terminate,Yes,No,,A manageable amount,For no-std;For async/await,Yes,I want my program to terminate,Yes
+2020/12/12 6:54:31 PM GMT+11,Yes,No,.lock().unwrap(),No,,No,No,,A manageable amount,,No,I want my program to terminate,Yes
+2020/12/12 6:56:08 PM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate;I want to check and fix the data,,No,,None,,No,,Yes
+2020/12/12 7:11:30 PM GMT+11,Yes,No,.lock().unwrap(),No,,No,Yes,,None,,No,I want to check and fix the data,Yes
+2020/12/12 7:19:17 PM GMT+11,Yes,Yes,.lock().unwrap(),No,I want to access the data again,No,No,,A manageable amount,To avoid having to write .lock.unwrap();For performance,No,,No
+2020/12/12 7:31:32 PM GMT+11,Yes,Yes,.lock()?,No,I want to check and fix the data,Yes,No,,A manageable amount,For performance;For async/await,No,I want to access the data again,Yes
+2020/12/12 7:34:32 PM GMT+11,Yes,No,.lock()?,No,,No,No,,A manageable amount,,,,
+2020/12/12 7:34:46 PM GMT+11,Yes,Yes,.lock().unwrap(),No,,No,No,,A manageable amount,To avoid having to write .lock.unwrap();For performance,No,,Yes
+2020/12/12 7:34:50 PM GMT+11,Yes,Yes,.lock()?,No,I want to check and fix the data,No,No,,A manageable amount,For performance;For async/await,No,I want to check and fix the data,No
+2020/12/12 7:46:30 PM GMT+11,Yes,Yes,.lock().unwrap();.lock()?,No,,No,No,,A manageable amount,To avoid having to write .lock.unwrap();For performance;For async/await,No,,Yes
+2020/12/12 7:55:23 PM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I want my program to terminate,No,No,,None,To avoid having to write .lock.unwrap();For async/await;The locks protect state that cannot be poisoned or cannot panic,No,I want to access the data again,Yes
+2020/12/12 8:00:12 PM GMT+11,Yes,No,.lock()?,Yes,I never want my program to terminate;I want to check and fix the data,Yes,No,,A manageable amount,,,,Yes
+2020/12/12 8:06:18 PM GMT+11,Yes,No,.lock().unwrap(),No,,No,,,None,,,,
+2020/12/12 8:09:29 PM GMT+11,Yes,Yes,.lock()?,No,I want my program to terminate;I never want to access the data again,No,No,,None,To avoid having to write .lock.unwrap(),No,,No
+2020/12/12 8:12:41 PM GMT+11,Yes,Yes,.lock().unwrap(),No,I want my program to terminate;I never want to access the data again,Yes,No,,A manageable amount,For performance,No,I want my program to terminate,Yes
+2020/12/12 8:14:32 PM GMT+11,Yes,Yes,.lock(),Yes,I want my program to terminate;I never want to access the data again,No,No,,A manageable amount,To avoid having to write .lock.unwrap();For async/await,No,,No
+2020/12/12 8:21:33 PM GMT+11,Yes,No,.lock().unwrap(),Yes,I want my program to terminate;I want to check and fix the data,Yes,No,,A manageable amount,,,,
+2020/12/12 8:28:38 PM GMT+11,Yes,Yes,.lock().unwrap();.lock()?,Yes,I want my program to terminate;I never want to access the data again;Program abort on panics in general,No,No,,None,To avoid having to write .lock.unwrap();For async/await,Yes,I want my program to terminate;I never want to access the data again;Aborting the program on panics,No
+2020/12/12 8:28:44 PM GMT+11,Yes,Yes,.lock().unwrap();.lock()?,No,I want my program to terminate,No,Yes,,A manageable amount,For performance;For async/await,No,I want my program to terminate,Yes
+2020/12/12 8:29:38 PM GMT+11,Yes,No,.lock().unwrap(),Yes,I want my program to terminate;I never want to access the data again,Yes,No,,A manageable amount,,,,Yes
+2020/12/12 8:29:50 PM GMT+11,Yes,Yes,.lock()?,No,"I want my program to terminate;I never want to access the data again;Locking a poisoned mutex should panic. A non-panicing version should be available as opt-in, or .lock_with_poison()",Yes,No,,A manageable amount,For no-std;For async/await,No,I never want to access the data again,No
+2020/12/12 8:35:58 PM GMT+11,No,No,,,,,,,,,,,
+2020/12/12 8:42:07 PM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate,No,No,,None,,,,
+2020/12/12 8:53:12 PM GMT+11,Yes,No,.lock().unwrap_or_else(PoisonGuard::into_inner),Yes,I want to check and fix the data,Yes,No,,A manageable amount,,,,Yes
+2020/12/12 9:02:15 PM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I want the panic to propagate automatically until the next isolation boundary,No,No,,None,To avoid having to write .lock.unwrap();For performance,No,,Yes
+2020/12/12 9:07:49 PM GMT+11,Yes,Yes,.lock().unwrap();.lock()?,No,I want my program to terminate,No,No,,A manageable amount,To avoid having to write .lock.unwrap();For performance,No,,Yes
+2020/12/12 9:11:13 PM GMT+11,Yes,No,.lock().unwrap(),No,I want to access the data again;I want to check and fix the data;I never want to access the data again,No,No,,A manageable amount,,,,
+2020/12/12 9:13:34 PM GMT+11,Yes,Yes,.lock().unwrap();.lock()?,No,I want my program to terminate;I want to check and fix the data,Yes,No,,A manageable amount,For performance,No,I want my program to terminate;I want to check and fix the data,No
+2020/12/12 9:14:49 PM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I want my program to terminate;I want to check and fix the data,No,No,,None,For performance;To reduce memory consumption (64b vs 1b in parking_lot) and usage of heap,No,,Yes
+2020/12/12 9:16:05 PM GMT+11,Yes,No,.lock().unwrap(),Yes,I never want to access the data again,Yes,No,,A manageable amount,,,,
+2020/12/12 9:29:08 PM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I want my program to terminate;I never want to access the data again,Yes,Yes,,A manageable amount,For no-std;For async/await,No,I want my program to terminate;I never want to access the data again,Yes
+2020/12/12 9:35:22 PM GMT+11,Yes,No,.lock().unwrap();.lock().unwrap_or_else(PoisonGuard::into_inner),Yes,I want my program to terminate;I want to access the data again,Yes,No,,None,,No,,No
+2020/12/12 10:09:46 PM GMT+11,Yes,Yes,.lock().unwrap(),No,I want my program to terminate;I never want to access the data again,No,No,,A manageable amount,For performance,No,,No
+2020/12/12 10:20:09 PM GMT+11,Yes,Yes,.lock().unwrap();.lock()?,No,I want my program to terminate,No,Yes,Arc<Mutex<Cache>>,A manageable amount,For async/await,No,I want my program to terminate,Yes
+2020/12/12 10:28:58 PM GMT+11,Yes,Yes,.lock()?,Yes,I never want my program to terminate;I want to access the data again,No,No,,A manageable amount,To avoid having to write .lock.unwrap();For performance,No,I never want my program to terminate;I want to access the data again,No
+2020/12/12 10:29:08 PM GMT+11,Yes,No,.lock().unwrap(),Yes,I want to check and fix the data,No,,,,,,I want to check and fix the data,Yes
+2020/12/12 10:37:31 PM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I never want to access the data again,No,No,,None,For performance;For async/await,No,,Yes
+2020/12/12 10:49:11 PM GMT+11,Yes,No,.lock().unwrap(),No,,No,No,,None,,,,
+2020/12/12 10:55:03 PM GMT+11,Yes,Yes,.lock().unwrap();.lock()?,Yes,I want my program to terminate;I want to check and fix the data,Yes,No,,A manageable amount,For performance;For async/await,Yes,I want my program to terminate;I want to check and fix the data,Yes
+2020/12/12 11:01:58 PM GMT+11,No,Yes,.lock()?,No,I want my program to terminate;I never want to access the data again,No,No,,None,For async/await,No,I want my program to terminate;I never want to access the data again,No
+2020/12/12 11:06:55 PM GMT+11,Yes,Yes,.lock().unwrap(),No,I never want to access the data again;i want the to thread to die,No,No,,A manageable amount,To avoid having to write .lock.unwrap();For performance;For no-std,No,,No
+2020/12/12 11:08:20 PM GMT+11,Yes,No,.lock().unwrap(),Yes,I never want to access the data again,Yes,No,,A manageable amount,,,,
+2020/12/12 11:20:22 PM GMT+11,Yes,No,.lock().unwrap();.lock()?,No,I want my program to terminate;I never want to access the data again,Yes,No,,A manageable amount,,No,,Yes
+2020/12/12 11:58:03 PM GMT+11,Yes,No,.lock().unwrap(),No,,,No,,A manageable amount,,No,,Yes
+2020/12/13 12:14:05 AM GMT+11,Yes,Yes,.lock().unwrap(),Yes,This is not a question that can be answered for the general case; it depends on the situation.,No,No,,None,To avoid having to write .lock.unwrap();For performance,No,,No
+2020/12/13 12:15:19 AM GMT+11,Yes,Yes,.lock().unwrap(),No,I want my program to terminate;I never want to access the data again,No,No,,A manageable amount,For no-std,No,,
+2020/12/13 12:18:46 AM GMT+11,Yes,Yes,.lock().unwrap_or_else(PoisonGuard::into_inner),No,I never want my program to terminate;I want to access the data again,No,No,,None,To avoid having to write .lock.unwrap();For performance,No,,No
+2020/12/13 12:19:59 AM GMT+11,Yes,No,.lock()?,No,I want my program to terminate,No,No,,None,,No,,
+2020/12/13 12:33:33 AM GMT+11,Yes,No,.lock().unwrap(),No,,No,No,,None,,,,
+2020/12/13 12:33:59 AM GMT+11,Yes,No,.lock().unwrap();.lock().unwrap_or_else(PoisonGuard::into_inner),Yes,"I never want my program to terminate;I want to access the data again;Lock poisoning is a nice idea conceptually, but it has never once been beneficial in practice so far",No,No,,A manageable amount,,,,
+2020/12/13 12:36:08 AM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I want to have free choice of all mentioned points,Yes,No,,A manageable amount,For no-std;For async/await,No,,Yes
+2020/12/13 12:43:52 AM GMT+11,Yes,Yes,.lock().unwrap(),No,,No,No,,None,To avoid having to write .lock.unwrap();For async/await,No,,No
+2020/12/13 12:48:04 AM GMT+11,Yes,No,.lock().unwrap_or_else(PoisonGuard::into_inner),Yes,I want to check and fix the data,Yes,No,,A manageable amount,,,,
+2020/12/13 12:50:52 AM GMT+11,Yes,Yes,.lock().unwrap(),No,,No,No,,A manageable amount,To avoid having to write .lock.unwrap();For performance,No,,
+2020/12/13 12:58:27 AM GMT+11,Yes,Yes,.lock().unwrap(),No,"By default, nothing",No,No,,None,For performance;For async/await,Yes,"Unwind up to some boundary (thread, catch_unwind) and basically discard the buggy computation (which may e.g. return 500 server error to an http client) OR abort the process if no such boundary is defined",No
+2020/12/13 1:03:45 AM GMT+11,Yes,Yes,.lock().unwrap();.lock()?,No,I never want my program to terminate,No,No,,A manageable amount,To avoid having to write .lock.unwrap();For performance;For async/await,No,I never want my program to terminate,No
+2020/12/13 1:09:12 AM GMT+11,Yes,Yes,.lock().unwrap();.lock()?,No,I never want my program to terminate;I want to access the data again,No,Yes,,A manageable amount,For async/await,No,,Yes
+2020/12/13 1:12:55 AM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I never want my program to terminate;I want to access the data again;I want to check and fix the data,No,No,,A manageable amount,To avoid having to write .lock.unwrap();For performance,No,,No
+2020/12/13 1:24:04 AM GMT+11,Yes,No,.lock().unwrap(),No,,No,No,,None,,No,,No
+2020/12/13 1:29:56 AM GMT+11,No,Yes,.lock()?,No,,No,No,,A manageable amount,For performance,No,,
+2020/12/13 1:36:15 AM GMT+11,Yes,No,.lock().unwrap();.lock()?,No,,Yes,No,,None,To avoid having to write .lock.unwrap();For async/await,No,I want my program to terminate;I never want my program to terminate;I want to access the data again;I want to check and fix the data,Yes
+2020/12/13 2:07:33 AM GMT+11,Yes,No,.lock().unwrap();.lock()?,No,,No,No,,A manageable amount,,Yes,I want my program to terminate;I never want to access the data again,Yes
+2020/12/13 2:10:53 AM GMT+11,Yes,No,.lock().unwrap();.lock().unwrap_or_else(PoisonGuard::into_inner),Yes,"I never want my program to terminate;I want to access the data again;Lock poisoning is a nice idea conceptually, but it has never once been beneficial in practice so far",No,No,,A manageable amount,,,,
+2020/12/13 2:11:59 AM GMT+11,Yes,No,.lock().unwrap(),No,,Yes,No,,A manageable amount,,,,
+2020/12/13 2:20:41 AM GMT+11,Yes,Yes,.lock().unwrap(),No,I want my program to terminate;I never want to access the data again,No,No,,A manageable amount,For performance;For no-std;For async/await,No,I want my program to terminate;I never want to access the data again,Yes
+2020/12/13 2:27:25 AM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate;I never want to access the data again,No,No,,A manageable amount,,No,,No
+2020/12/13 2:33:29 AM GMT+11,Yes,Yes,.lock().unwrap();.await,No,I want my program to terminate;I want to access the data again,No,No,,A manageable amount,For async/await,No,I want my program to terminate,No
+2020/12/13 2:40:58 AM GMT+11,Yes,No,.lock().unwrap(),Yes,I want my program to terminate;I never want to access the data again,Yes,Yes,"struct XyzState { handle: Arc<Mutex<Inner>>, … }, then fn do_something(&self)",A manageable amount,,,,
+2020/12/13 2:46:39 AM GMT+11,Yes,No,.lock()?,No,I want my program to terminate;I want to check and fix the data,Yes,No,,A manageable amount,,,,
+2020/12/13 2:59:46 AM GMT+11,Yes,Yes,.lock().unwrap(),No,,No,No,,None,For performance,No,,No
+2020/12/13 3:00:20 AM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate;But it would be nice if the termination message included information about what triggered the panic,Yes,Yes,,A manageable amount,For async/await,No,I want my program to terminate,Yes
+2020/12/13 3:04:48 AM GMT+11,No,Yes,.lock()?,Yes,I want to check and fix the data,No,No,,A manageable amount,To avoid having to write .lock.unwrap();For async/await,Yes,I want to check and fix the data,No
+2020/12/13 3:06:23 AM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate,No,No,,A manageable amount,For no-std,No,I want my program to terminate,No
+2020/12/13 3:08:00 AM GMT+11,Yes,Yes,.lock().unwrap(),No,I want my program to terminate,Yes,No,,A manageable amount,For performance;For async/await,No,I want my program to terminate;I want to check and fix the data;I never want to access the data again,Yes
+2020/12/13 3:19:47 AM GMT+11,Yes,Yes,.lock().unwrap(),No,I want my program to terminate,No,No,,A manageable amount,For performance;For async/await,No,,
+2020/12/13 3:37:27 AM GMT+11,Yes,No,.lock().unwrap();.lock().unwrap_or_else(PoisonGuard::into_inner),Yes,"I want my program to terminate;I want to access the data again;It depends, Result is great for this",Yes,No,,A manageable amount,For async/await,No,,No
+2020/12/13 3:41:08 AM GMT+11,Yes,No,.lock().unwrap();.lock()?,No,,Yes,Yes,Arc<Mutex<CustomType>>,Too much,,No,,Yes
+2020/12/13 3:50:42 AM GMT+11,Yes,Yes,.lock().unwrap();.lock().expect(“couldn’t acquire lock!”),No,I want my program to terminate;I never want to access the data again,No,No,,None,To avoid having to write .lock.unwrap();For performance,No,,
+2020/12/13 3:53:01 AM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I want to access the data again,No,No,,A manageable amount,For async/await,No,,Yes
+2020/12/13 3:54:59 AM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I never want to access the data again,Yes,No,,None,For performance,No,,Yes
+2020/12/13 3:58:24 AM GMT+11,Yes,Yes,.lock()?,No,I never want my program to terminate;I want to check and fix the data,Yes,No,,None,For async/await,No,I never want my program to terminate;I want to access the data again;I want to check and fix the data,No
+2020/12/13 4:10:45 AM GMT+11,No,No,,No,,,,,,,,,
+2020/12/13 4:19:52 AM GMT+11,Yes,No,.lock().unwrap(),No,,No,No,,None,,,,
+2020/12/13 4:20:08 AM GMT+11,No,Yes,.lock().unwrap(),Yes,I want my program to terminate,No,No,,None,To avoid having to write .lock.unwrap();For performance,No,I want my program to terminate,Yes
+2020/12/13 4:21:28 AM GMT+11,Yes,No,.lock().unwrap(),No,I never want my program to terminate,No,No,,A manageable amount,,,,
+2020/12/13 4:30:05 AM GMT+11,Yes,No,.lock().unwrap(),No,I want to check and fix the data,No,No,,A manageable amount,To avoid having to write .lock.unwrap();For performance;For no-std;For async/await,No,,Yes
+2020/12/13 4:30:06 AM GMT+11,No,No,,,,,,,,,,,
+2020/12/13 4:36:56 AM GMT+11,Yes,Yes,lock.expect(),No,I want my program to terminate;I never want my program to terminate;I never want to access the data again,Yes,No,,A manageable amount,For no-std;For async/await,No,,Yes
+2020/12/13 4:44:40 AM GMT+11,Yes,No,.lock().unwrap(),No,I want to access the data again;I want to check and fix the data,,No,,,,,,
+2020/12/13 4:48:21 AM GMT+11,Yes,Yes,.lock().unwrap(),No,I want my program to terminate,Yes,No,,A manageable amount,For no-std,No,,No
+2020/12/13 4:52:14 AM GMT+11,Yes,No,.lock().unwrap(),No,I want to check and fix the data,No,No,,A manageable amount,,No,,Yes
+2020/12/13 5:33:44 AM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I want my program to terminate,No,No,,A manageable amount,To avoid having to write .lock.unwrap();For performance;For async/await,No,,No
+2020/12/13 5:34:23 AM GMT+11,No,Yes,,,,,,,,To avoid having to write .lock.unwrap();For performance;For async/await,No,I never want to access the data again,Yes
+2020/12/13 5:36:02 AM GMT+11,No,Yes,.lock().unwrap(),No,I want to access the data again,No,No,,A manageable amount,For async/await,No,I want to access the data again,No
+2020/12/13 5:41:56 AM GMT+11,Yes,No,.lock().unwrap();.lock()?,No,I never want my program to terminate;I want to access the data again;I want to check and fix the data,No,No,,A manageable amount,For performance;For async/await,No,,No
+2020/12/13 5:42:54 AM GMT+11,Yes,Yes,.lock().unwrap();.lock().unwrap_or_else(PoisonGuard::into_inner),Yes,I never want my program to terminate;I want to access the data again,No,No,,None,To avoid having to write .lock.unwrap();For performance;For no-std,No,I never want my program to terminate;I want to access the data again,No
+2020/12/13 5:45:22 AM GMT+11,Yes,Yes,.lock().unwrap();.lock()?;.lock().expect(...),No,I'm not sure,No,Yes,"I can't find an example right now, but I have definitely used them before.",None,For performance;For no-std,No,I'm not sure.,No
+2020/12/13 5:57:16 AM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I want to access the data again,No,No,,A manageable amount,For async/await,No,I want to access the data again;I want to check and fix the data,No
+2020/12/13 5:57:29 AM GMT+11,Yes,Yes,.lock().unwrap();.lock()?,Yes,I never want my program to terminate,No,No,,A manageable amount,To avoid having to write .lock.unwrap();For performance;For no-std,No,I never want my program to terminate,Yes
+2020/12/13 6:37:09 AM GMT+11,Yes,Yes,.lock().unwrap();.lock()?,Yes,I never want my program to terminate;I want to report an RPC error (like HTTP 500) and continue,No,Yes,"RwLock<HashMap<Run, RwLock<RunData>>>",None,For performance,No,,Yes
+2020/12/13 6:55:46 AM GMT+11,Yes,Yes,.lock().unwrap();.lock().unwrap_or_else(PoisonGuard::into_inner),No,,No,No,,A manageable amount,For performance;For async/await,No,I never want my program to terminate;I want to access the data again;I want to check and fix the data,No
+2020/12/13 6:57:38 AM GMT+11,Yes,Yes,.lock().unwrap(),No,I want my program to terminate,No,No,,None,For async/await;Send guards,No,I want my program to terminate,Yes
+2020/12/13 7:07:17 AM GMT+11,Yes,Yes,.lock().unwrap(),No,,No,Yes,,A manageable amount,To avoid having to write .lock.unwrap();For performance,No,,Yes
+2020/12/13 7:40:15 AM GMT+11,Yes,Yes,.lock().unwrap(),No,I want my program to terminate;I never want to access the data again,No,No,,A manageable amount,To avoid having to write .lock.unwrap();For performance;For async/await,No,I want my program to terminate;I never want to access the data again,Yes
+2020/12/13 7:59:44 AM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I want my program to terminate,No,No,,None,To avoid having to write .lock.unwrap();For async/await,No,,No
+2020/12/13 8:01:33 AM GMT+11,Yes,Yes,.lock().unwrap(),No,,No,No,,None,To avoid having to write .lock.unwrap();For performance,No,"I want my program to terminate;I want a panic to happen, i.e. lock() to behave as lock().unwrap() behaves now",No
+2020/12/13 8:07:48 AM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate;I never want my program to terminate;I want to check and fix the data;I never want to access the data again,No,Yes,fn update(state: Arc<Mutex<T>>);,A manageable amount,,,,
+2020/12/13 8:11:59 AM GMT+11,Yes,No,.lock().unwrap(),Yes,I want my program to terminate;I want to check and fix the data,Yes,Yes,,A manageable amount,,,,
+2020/12/13 8:29:54 AM GMT+11,Yes,Yes,.lock().unwrap(),No,I want to check and fix the data;I never want to access the data again,Yes,No,,None,To avoid having to write .lock.unwrap();For performance,No,,No
+2020/12/13 8:37:14 AM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate,,No,,None,,No,I want my program to terminate,
+2020/12/13 8:56:04 AM GMT+11,Yes,No,.lock().unwrap(),No,I want to check and fix the data,No,No,,A manageable amount,,,,
+2020/12/13 9:09:31 AM GMT+11,Yes,Yes,.lock().unwrap();.lock()?,Yes,"Check data, terminate if invariant is broken",Yes,No,,A manageable amount,For performance;For async/await,Yes,"check data, terminate if invariant is broken",Yes
+2020/12/13 9:12:06 AM GMT+11,Yes,No,.lock().unwrap(),No,,Yes,No,,A manageable amount,,,,
+2020/12/13 9:47:34 AM GMT+11,Yes,No,.lock().unwrap(),No,,Yes,No,,None,,,,Yes
+2020/12/13 9:59:41 AM GMT+11,Yes,No,.lock().unwrap_or_else(PoisonGuard::into_inner),No,I never want my program to terminate,No,No,,A manageable amount,,No,,Yes
+2020/12/13 10:13:29 AM GMT+11,Yes,Yes,.lock()?;lock(),No,I never want my program to terminate;I want to access the data again,No,No,,A manageable amount,To avoid having to write .lock.unwrap();For performance;For async/await,No,I never want my program to terminate;I want to access the data again,No
+2020/12/13 10:48:30 AM GMT+11,No,Yes,,,,,,,,To avoid having to write .lock.unwrap();For performance;For async/await,No,I never want my program to terminate;I want to access the data again,No
+2020/12/13 10:57:21 AM GMT+11,Yes,No,.lock().unwrap(),No,,No,No,,A manageable amount,,No,,No
+2020/12/13 11:36:08 AM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate;I want to check and fix the data,No,Yes,"As a parameter in some constructors:
+fn from_x(x: Arc<Mutex<X>>) -> Self;",None,,,,
+2020/12/13 12:49:36 PM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate,No,No,,Too much,To avoid having to write .lock.unwrap(),No,I want my program to terminate,
+2020/12/13 12:56:59 PM GMT+11,Yes,No,.lock().unwrap(),No,,No,No,,None,,,,
+2020/12/13 1:12:40 PM GMT+11,Yes,Yes,.lock().unwrap(),No,,No,No,,A manageable amount,For performance;For async/await,No,,No
+2020/12/13 1:40:07 PM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate;I never want to access the data again,No,No,,None,,,,
+2020/12/13 2:58:06 PM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate;I want to check and fix the data,No,Yes,,A manageable amount,For performance,No,I want my program to terminate;I want to check and fix the data,No
+2020/12/13 3:59:35 PM GMT+11,No,Yes,.lock()?,No,,No,No,,None,To avoid having to write .lock.unwrap();For performance,No,,Yes
+2020/12/13 4:07:58 PM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate,Yes,No,,None,,,,
+2020/12/13 4:20:16 PM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I want my program to terminate;I never want to access the data again,Yes,No,,A manageable amount,For performance;For low size,No,,No
+2020/12/13 4:32:11 PM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate;I never want to access the data again,,No,,None,,No,,
+2020/12/13 5:21:39 PM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I never want my program to terminate;I want to check and fix the data,Yes,Yes,parking_lot,A manageable amount,To avoid having to write .lock.unwrap();For async/await,No,,Yes
+2020/12/13 5:24:17 PM GMT+11,Yes,No,.lock().unwrap();.lock()?;.lock().unwrap_or_else(PoisonGuard::into_inner),Yes,I want to access the data again,No,Yes,fn(…) -> Mutex<T>,None,,,,
+2020/12/13 6:21:46 PM GMT+11,Yes,Yes,.lock()?,No,,Yes,No,,A manageable amount,For async/await,No,,No
+2020/12/13 7:22:46 PM GMT+11,Yes,No,.lock().unwrap(),No,,No,No,,A manageable amount,,,,
+2020/12/13 7:25:45 PM GMT+11,Yes,No,.lock().unwrap(),Yes,I want my program to terminate,Yes,No,,A manageable amount,,,,
+2020/12/13 7:47:04 PM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate,No,No,,A manageable amount,,No,,No
+2020/12/13 8:08:36 PM GMT+11,No,Yes,.lock().unwrap(),No,,No,No,,None,To avoid having to write .lock.unwrap();For async/await,No,I want to access the data again,No
+2020/12/13 9:21:41 PM GMT+11,Yes,No,.lock().unwrap();.lock()?,No,,No,No,,A manageable amount,,No,,No
+2020/12/13 9:48:59 PM GMT+11,Yes,Yes,.lock().unwrap(),Yes,,No,No,,A manageable amount,For performance;For async/await,No,,Yes
+2020/12/13 10:53:09 PM GMT+11,Yes,Yes,.lock().unwrap(),No,I want my program to terminate,,No,,None,To avoid having to write .lock.unwrap();For performance;For async/await,No,,Yes
+2020/12/13 10:59:00 PM GMT+11,Yes,No,.lock().unwrap(),No,I want to check and fix the data,No,No,,None,,,,
+2020/12/13 11:13:19 PM GMT+11,Yes,Yes,.lock().unwrap(),No,I want my program to terminate,Yes,No,,None,For performance;For no-std;For async/await,No,I want my program to terminate,Yes
+2020/12/13 11:44:50 PM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I want my program to terminate;I never want my program to terminate,No,No,,None,For performance;For async/await,No,,No
+2020/12/14 1:17:08 AM GMT+11,Yes,No,.lock().unwrap();.lock()?,Yes,I want my program to terminate;I want to check and fix the data,Yes,No,,None,,No,I want my program to terminate;I want to check and fix the data,Yes
+2020/12/14 2:13:59 AM GMT+11,Yes,Yes,.lock().unwrap(),No,,No,No,,A manageable amount,To avoid having to write .lock.unwrap();For performance,No,,No
+2020/12/14 2:14:40 AM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate;I never want to access the data again,No,No,,None,,,,Yes
+2020/12/14 2:17:23 AM GMT+11,Yes,No,.lock()?,No,I never want my program to terminate;I want to access the data again;I want to check and fix the data,No,,,None,,No,I never want my program to terminate;I want to access the data again;I want to check and fix the data,Yes
+2020/12/14 2:30:45 AM GMT+11,Yes,Yes,.lock().unwrap();.lock()?,Yes,I want my program to terminate;I want to check and fix the data,Yes,Yes,No guard exposed. Arc lock,A manageable amount,For performance,No,I want my program to terminate;I want to check and fix the data,Yes
+2020/12/14 2:53:29 AM GMT+11,Yes,Yes,.lock().unwrap();/* in a Drop impl: */ if let Ok(_) = mutex.lock() { /* clear stale data */ },Yes,"I never want to access the data again;I want any tasks touching the data to terminate, but unrelated tasks serving other clients to continue.",No,Yes,type Handle = Arc<Mutex<Room>>;,None,For async/await,No,"I never want to access the data again;I want any tasks touching the data to terminate, but unrelated tasks serving other clients to continue",No
+2020/12/14 2:58:40 AM GMT+11,Yes,Yes,.lock()?,No,I want my program to terminate;I want to check and fix the data;I never want to access the data again,No,No,,A manageable amount,For performance,No,I want my program to terminate;I want to check and fix the data,Yes
+2020/12/14 3:48:06 AM GMT+11,No,Yes,.lock().unwrap(),No,,No,No,,None,For async/await,No,I never want my program to terminate,No
+2020/12/14 4:27:38 AM GMT+11,Yes,Yes,.lock().unwrap_or_else(PoisonGuard::into_inner),Yes,I want my program to terminate;I want to access the data again,No,No,,A manageable amount,To avoid having to write .lock.unwrap();For async/await,No,I want to access the data again,No
+2020/12/14 5:42:46 AM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate;I want to check and fix the data,No,No,,None,,,,
+2020/12/14 5:58:20 AM GMT+11,Yes,No,.lock().unwrap(),No,,No,No,,A manageable amount,,,,
+2020/12/14 6:18:38 AM GMT+11,Yes,No,.lock().unwrap(),Yes,"Situation dependent — some need termination, some need just to drop one part",No,No,,A manageable amount,,,,
+2020/12/14 6:46:37 AM GMT+11,Yes,No,.lock().unwrap(),No,,Yes,No,,None,,,,
+2020/12/14 7:05:01 AM GMT+11,No,Yes,.lock().unwrap_or_else(PoisonGuard::into_inner),Yes,I never want my program to terminate;I want to access the data again,No,No,,A manageable amount,To avoid having to write .lock.unwrap();For performance,No,I never want my program to terminate;I want to access the data again;I want to check and fix the data,Yes
+2020/12/14 7:52:19 AM GMT+11,Yes,No,.lock().unwrap(),No,I never want my program to terminate;I want to access the data again;I want to check and fix the data,No,No,,A manageable amount,For performance;For no-std;For async/await,No,I never want my program to terminate;I want to access the data again;I want to check and fix the data,Yes
+2020/12/14 7:53:12 AM GMT+11,Yes,No,.lock().unwrap(),No,I never want my program to terminate;I want to check and fix the data,No,No,,None,,,,
+2020/12/14 8:07:17 AM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate,No,No,Taking a `FnOnce` argument which is invoked. Never really return any guard.,None,,,,
+2020/12/14 8:13:10 AM GMT+11,Yes,No,.lock().unwrap(),Yes,I want my program to terminate,Yes,No,,A manageable amount,,,,Yes
+2020/12/14 8:16:38 AM GMT+11,Yes,Yes,.lock().unwrap();.lock()?,Yes,I want my program to terminate;I want to access the data again,Yes,No,,A manageable amount,For performance;For no-std;For async/await,No,,Yes
+2020/12/14 9:08:14 AM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I want my program to terminate,Yes,Yes,"pub fn new<'a>(foo: RwLockReadGuard<'a, Foo>) -> Option<(Self, Bar)> {",None,For performance;For async/await,No,I want my program to terminate,No
+2020/12/14 11:20:24 AM GMT+11,Yes,Yes,.lock().unwrap();.lock()?,Yes,I want my program to terminate;I never want to access the data again,Yes,No,,None,To avoid having to write .lock.unwrap();For async/await,No,,Yes
+2020/12/14 1:11:43 PM GMT+11,Yes,No,.lock()?,Yes,I never want my program to terminate,No,No,,A manageable amount,For async/await,No,,No
+2020/12/14 1:51:49 PM GMT+11,Yes,No,.lock().unwrap(),Yes,I want my program to terminate,No,No,,None,,,,
+2020/12/14 4:57:38 PM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I want my program to terminate,No,No,,None,To avoid having to write .lock.unwrap();For async/await,No,,No
+2020/12/14 5:35:23 PM GMT+11,No,Yes,.lock().unwrap();.lock()?;.lock().unwrap_or_else(PoisonGuard::into_inner),Yes,I want my program to terminate;I want to access the data again;I never want to access the data again,,No,,None,For performance;For async/await,No,,Yes
+2020/12/14 5:43:28 PM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I want my program to terminate;I want to check and fix the data;I never want to access the data again,Yes,No,,Too much,For performance;For no-std;For async/await,No,,Yes
+2020/12/14 5:52:34 PM GMT+11,Yes,Yes,.lock().unwrap();.lock()?,No,I want my program to terminate;I want to check and fix the data,No,No,,A manageable amount,To avoid having to write .lock.unwrap();For performance;For async/await,No,,No
+2020/12/14 6:01:17 PM GMT+11,Yes,No,.lock().unwrap(),No,,No,No,,A manageable amount,,,,
+2020/12/14 6:12:07 PM GMT+11,Yes,No,.lock().unwrap();.lock()?,No,I want my program to terminate;I never want to access the data again,Yes,Yes,,A manageable amount,For performance,No,I want my program to terminate;I never want to access the data again,No
+2020/12/14 7:33:13 PM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate;I want to check and fix the data,Yes,No,,A manageable amount,,,,
+2020/12/14 9:01:19 PM GMT+11,Yes,Yes,.lock()?,No,,,No,,None,For async/await,No,,
+2020/12/14 9:06:07 PM GMT+11,Yes,No,.lock().unwrap(),No,,No,No,,A manageable amount,,,,
+2020/12/14 9:23:43 PM GMT+11,No,No,.lock().unwrap(),No,I want my program to terminate,,,,A manageable amount,,No,,
+2020/12/14 10:23:43 PM GMT+11,Yes,Yes,.lock().unwrap();.lock()?,No,,No,No,,A manageable amount,To avoid having to write .lock.unwrap();For async/await,No,,Yes
+2020/12/14 10:26:27 PM GMT+11,Yes,No,.lock().unwrap(),Yes,I want my program to terminate,Yes,No,,A manageable amount,,,,
+2020/12/14 11:39:15 PM GMT+11,Yes,No,.lock().unwrap();.lock().unwrap_or_else(PoisonGuard::into_inner),Yes,I want my program to terminate;I want to access the data again,Yes,No,,A manageable amount,,No,,
+2020/12/14 11:48:03 PM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate,No,No,,Too much,,,,
+2020/12/14 11:55:28 PM GMT+11,Yes,No,.lock().unwrap();.lock()?,Yes,I want my program to terminate,Yes,No,,A manageable amount,,No,,Yes
+2020/12/15 12:00:39 AM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I want my program to terminate;I want to access the data again,No,No,,A manageable amount,For performance;For async/await,No,,No
+2020/12/15 12:12:52 AM GMT+11,No,Yes,.lock(),No,I never want my program to terminate;I want to access the data again,No,No,,A manageable amount,To avoid having to write .lock.unwrap();For performance;For async/await,No,,No
+2020/12/15 1:39:01 AM GMT+11,Yes,Yes,.lock()?,No,I want my program to terminate;I never want to access the data again,No,No,,A manageable amount,For async/await,,,Yes
+2020/12/15 1:48:35 AM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate;I never want to access the data again,Yes,No,,A manageable amount,,No,,Yes
+2020/12/15 2:16:29 AM GMT+11,No,Yes,.lock().unwrap(),No,I want my program to terminate;I never want to access the data again,No,No,,,To avoid having to write .lock.unwrap();For performance;For async/await,No,I want my program to terminate;I never want to access the data again,No
+2020/12/15 2:24:01 AM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate,No,No,,A manageable amount,,No,,No
+2020/12/15 2:34:52 AM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate,Yes,Yes,,None,For no-std,No,,No
+2020/12/15 3:18:16 AM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I want to access the data again,Yes,,,,,,,
+2020/12/15 4:38:18 AM GMT+11,Yes,Yes,.lock().unwrap(),No,,Yes,No,,A manageable amount,For performance;For async/await,No,,Yes
+2020/12/15 6:25:22 AM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate,,No,,,,,,
+2020/12/15 6:25:34 AM GMT+11,No,Yes,.lock()?,Yes,I want my program to terminate;I want to access the data again;I want to check and fix the data,No,No,,A manageable amount,To avoid having to write .lock.unwrap();For performance,No,I want my program to terminate;I want to access the data again;I want to check and fix the data,Yes
+2020/12/15 8:27:17 AM GMT+11,Yes,Yes,.lock().unwrap(),No,I want my program to terminate;I never want to access the data again,No,Yes,,A manageable amount,For performance;For async/await,No,,No
+2020/12/15 8:50:11 AM GMT+11,Yes,No,.lock().unwrap(),Yes,I never want my program to terminate,No,No,,None,For performance,No,I never want my program to terminate,Yes
+2020/12/15 10:04:32 AM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I want my program to terminate,,No,,,For performance,No,,
+2020/12/15 10:27:03 AM GMT+11,Yes,Yes,.lock().unwrap(),No,,No,No,,None,For performance;For async/await,No,,No
+2020/12/15 10:28:11 AM GMT+11,Yes,Yes,.lock()?,Yes,I don't let locks be poisoned as I aim to make code in locks panic-free.  Having rustc prove a block is panic-free would help.,No,No,,None,To avoid having to write .lock.unwrap();For performance,Yes,As before I don't want this unwanted state to be possible.,Yes
+2020/12/15 10:42:19 AM GMT+11,Yes,Yes,.lock()?,Yes,I want my program to terminate,No,No,,A manageable amount,For async/await,No,I want my program to terminate,No
+2020/12/15 10:53:49 AM GMT+11,Yes,No,.lock().unwrap();.lock()?,No,I want my program to terminate;I want to access the data again,Yes,No,,A manageable amount,,,,
+2020/12/15 11:01:53 AM GMT+11,Yes,Yes,"read(), write() in lever crate and bunch of problems of std is also resolved there.",Yes,I want to access the data again;I want to check and fix the data,No,No,Like how lever crate's api designed.,A manageable amount,For performance;Database related special issues,Yes,I never want my program to terminate;I want to access the data again;I want to check and fix the data,No
+2020/12/15 11:06:22 AM GMT+11,Yes,No,.lock().unwrap(),Yes,I want my program to terminate;I want to check and fix the data,Yes,No,,A manageable amount,,,,Yes
+2020/12/15 11:14:58 AM GMT+11,No,Yes,.lock().unwrap();.lock()?,Yes,I want my program to terminate;I want to access the data again;I never want to access the data again,No,No,,None,To avoid having to write .lock.unwrap();For performance;For no-std;For async/await,No,I want my program to terminate;I want to access the data again;I never want to access the data again,Yes
+2020/12/15 11:47:05 AM GMT+11,Yes,Yes,.lock().unwrap(),No,,No,No,,A manageable amount,For async/await,No,I want my program to terminate,No
+2020/12/15 12:57:00 PM GMT+11,Yes,Yes,.lock().unwrap(),No,,No,No,,None,For no-std;For async/await,No,,No
+2020/12/15 1:35:54 PM GMT+11,Yes,Yes,.lock().unwrap(),No,I want my program to terminate,No,No,,None,For async/await,No,I want my program to terminate,No
+2020/12/15 2:05:32 PM GMT+11,No,Yes,.lock()?,Yes,I want my program to terminate,Yes,No,,Too much,For performance,No,I want my program to terminate,No
+2020/12/15 2:27:32 PM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I want my program to terminate,No,No,,None,To avoid having to write .lock.unwrap();For performance;For async/await,No,I want my program to terminate,No
+2020/12/15 2:52:02 PM GMT+11,Yes,No,.lock().unwrap(),No,I never want my program to terminate;I want to access the data again;I want to check and fix the data,No,No,,None,,,,
+2020/12/15 3:28:21 PM GMT+11,No,Yes,Just .lock(); I use parking_lot,No,I want my program to terminate,No,No,,None,To avoid having to write .lock.unwrap();For performance,No,,No
+2020/12/15 4:33:47 PM GMT+11,Yes,Yes,.lock().unwrap();.lock()?,No,I want my program to terminate;I never want to access the data again,Yes,No,,A manageable amount,For async/await,No,I want my program to terminate;I never want to access the data again,No
+2020/12/15 4:49:07 PM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I want my program to terminate;I never want to access the data again;I expect to use different types of locks (potentially) to get different behavior.,Yes,Yes,,Too much,For no-std,,,Yes
+2020/12/15 5:21:56 PM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I want my program to terminate,No,No,,A manageable amount,To avoid having to write .lock.unwrap();For performance,No,I want my program to terminate,Yes
+2020/12/15 5:40:37 PM GMT+11,Yes,Yes,.lock().unwrap(),No,I want my program to terminate,Yes,No,,None,For performance;For async/await;Through other libraries that use them,No,I want my program to terminate,Yes
+2020/12/15 5:53:51 PM GMT+11,Yes,No,.lock().unwrap(),No,,No,No,,A manageable amount,,,,
+2020/12/15 6:01:50 PM GMT+11,Yes,No,.lock().unwrap();.lock()?,No,,Yes,No,,A manageable amount,For async/await,No,,Yes
+2020/12/15 7:14:10 PM GMT+11,Yes,Yes,.lock().unwrap();.lock()?,Yes,I never want my program to terminate;I want to access the data again;I want to check and fix the data,Yes,Yes,"I constantly expose objects behind a RwLock, for example:
+
+RwLockReadGuard<'_, HashMap<String, SomeDataStructure>>",None,For performance,Yes,I want to access the data again;I want to check and fix the data,Yes
+2020/12/15 7:26:12 PM GMT+11,Yes,No,If let ok,No,,,No,,None,,,,
+2020/12/15 7:28:33 PM GMT+11,No,No,,,,,,,,,,,
+2020/12/15 7:56:02 PM GMT+11,Yes,Yes,.lock().unwrap(),No,I never want my program to terminate;I want to access the data again;I want to check and fix the data,Yes,No,,A manageable amount,To avoid having to write .lock.unwrap();For no-std;For async/await,No,I never want my program to terminate;I want to access the data again;I want to check and fix the data,Yes
+2020/12/15 8:44:56 PM GMT+11,Yes,No,.lock().unwrap();.lock()?,No,,No,No,,A manageable amount,,,,
+2020/12/15 8:59:18 PM GMT+11,Yes,No,.lock().unwrap(),Yes,I want my program to terminate;I never want to access the data again,No,No,,A manageable amount,,No,,Yes
+2020/12/15 9:56:10 PM GMT+11,Yes,No,.lock().unwrap();.lock()?,No,I want my program to terminate,Yes,No,,A manageable amount,For performance;For no-std,No,,
+2020/12/15 11:07:38 PM GMT+11,Yes,Yes,.lock().unwrap(),No,,,No,,A manageable amount,For async/await,No,I want my program to terminate,
+2020/12/15 11:08:46 PM GMT+11,Yes,No,.lock().unwrap(),No,I want to access the data again,No,Yes,,A manageable amount,,,,
+2020/12/15 11:23:59 PM GMT+11,Yes,No,.lock()?;.lock().unwrap_or_else(PoisonGuard::into_inner),Yes,I want to access the data again;I want to check and fix the data,Yes,No,,A manageable amount,For no-std;For async/await;because libraries I'm using do.,No,I want to access the data again;I want to check and fix the data,Yes
+2020/12/16 1:01:44 AM GMT+11,Yes,Yes,.lock().unwrap(),No,,,,,,For async/await,No,,
+2020/12/16 2:09:26 AM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I want my program to terminate;I want to check and fix the data,No,No,,A manageable amount,For performance;For async/await,No,,Yes
+2020/12/16 3:30:34 AM GMT+11,No,Yes,,,,,,,,For no-std,Yes,I want my program to terminate;I never want my program to terminate;I want to access the data again;I want to check and fix the data;I never want to access the data again;It depends on the application.,
+2020/12/16 3:48:14 AM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate;I want to access the data again,No,No,,A manageable amount,For async/await,No,I want my program to terminate;I want to access the data again,No
+2020/12/16 4:38:11 AM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate;I never want to access the data again,Yes,No,,A manageable amount,For no-std;For async/await,No,,Yes
+2020/12/16 5:43:37 AM GMT+11,Yes,No,.lock().unwrap(),Yes,I want my program to terminate;I never want to access the data again,No,No,,None,,,,
+2020/12/16 5:59:40 AM GMT+11,No,Yes,.lock().unwrap(),Yes,I want my program to terminate,No,No,,A manageable amount,For async/await,No,,No
+2020/12/16 6:05:26 AM GMT+11,No,No,,,,,,,,,,,
+2020/12/16 6:16:26 AM GMT+11,Yes,No,.lock()?,Yes,I never want my program to terminate;I want to access the data again,No,No,,A manageable amount,,No,,Yes
+2020/12/16 6:40:49 AM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I never want my program to terminate;I want to check and fix the data,Yes,No,,A manageable amount,"To avoid having to write .lock.unwrap();For performance;Because standard library locks are unrecoverable, I cannot replace the poisionous value in an RwLock with a good value",Yes,I never want my program to terminate;I want to check and fix the data,Yes
+2020/12/16 8:24:28 AM GMT+11,Yes,Yes,.lock().unwrap(),No,,No,Yes,`Arc<Mutex<T>>` mostly,A manageable amount,For async/await,No,,Yes
+2020/12/16 10:14:46 AM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate,Yes,No,,None,,No,I want my program to terminate;I never want to access the data again,Yes
+2020/12/16 10:15:25 AM GMT+11,No,Yes,.lock().unwrap(),No,I want to check and fix the data,No,No,,None,For performance;For no-std;For async/await,No,I want my program to terminate;I want to access the data again;I want to check and fix the data,No
+2020/12/16 11:40:21 AM GMT+11,Yes,Yes,.lock()?,No,,No,Yes,,A manageable amount,For performance,No,,Yes
+2020/12/16 12:26:20 PM GMT+11,Yes,Yes,.lock().unwrap();.lock()?;if let Ok(data) = lock.lock() { .. },No,I want my program to terminate,No,No,,A manageable amount,For performance;For async/await,,I want my program to terminate,No
+2020/12/16 1:05:37 PM GMT+11,Yes,No,.lock().unwrap();.lock()?,Yes,I never want to access the data again,No,No,,A manageable amount,,No,,
+2020/12/16 2:03:21 PM GMT+11,Yes,No,.lock().unwrap();.lock()?,No,I want my program to terminate;I never want my program to terminate;I never want to access the data again,No,No,,A manageable amount,,,,
+2020/12/16 3:41:58 PM GMT+11,Yes,No,.lock().unwrap(),Yes,I want my program to terminate,No,No,,A manageable amount,For performance,No,,No
+2020/12/16 5:46:01 PM GMT+11,Yes,No,.lock().unwrap(),Yes,I want to check and fix the data,Yes,No,,A manageable amount,,,,Yes
+2020/12/17 12:52:49 AM GMT+11,Yes,No,"match and log/report poison, usually pasing error to higher layer logic",Yes,I want my program to terminate;I never want to access the data again,Yes,No,,A manageable amount,,,,
+2020/12/17 1:37:36 AM GMT+11,Yes,Yes,.lock().unwrap(),Yes,"I never want to access the data again;Depending on the data, I would want my program to terminate, but not necessarily in all cases.",Yes,No,,A manageable amount,For async/await,Yes,"I never want to access the data again;In our application, we use panic=abort to terminate the process to ""propagate"" the panic to all threads, but this may not be possible if you just want local lock poisoning and more control.",Yes
+2020/12/17 4:50:19 AM GMT+11,Yes,No,.lock().unwrap(),Yes,I want my program to terminate;I never want to access the data again,Yes,Yes,,Too much,,,,Yes
+2020/12/17 6:43:56 AM GMT+11,Yes,Yes,.lock().unwrap(),No,I want my program to terminate,No,Yes,Mostly methods returning LockResult<WhateverGuard<T>>,A manageable amount,For performance;For RCU,No,,No
+2020/12/17 7:58:11 AM GMT+11,Yes,No,.lock().unwrap(),No,I want to access the data again;I want to check and fix the data,No,No,,A manageable amount,For async/await,No,,Yes
+2020/12/17 12:07:48 PM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I want my program to terminate;I want to check and fix the data,No,No,,A manageable amount,For async/await,No,,Yes
+2020/12/17 12:22:55 PM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate,No,No,,None,,,,
+2020/12/17 1:05:20 PM GMT+11,Yes,Yes,.lock()?,No,I want my program to terminate,No,No,,A manageable amount,For async/await,No,I want to check and fix the data,Yes
+2020/12/17 2:10:57 PM GMT+11,No,No,,,,,,,,,,,
+2020/12/17 2:30:56 PM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I want my program to terminate;I never want to access the data again,Yes,No,,A manageable amount,For no-std;For async/await,No,,Yes
+2020/12/17 2:54:48 PM GMT+11,Yes,No,.lock().unwrap(),No,,,No,,A manageable amount,,,,
+2020/12/17 3:09:50 PM GMT+11,Yes,Yes,.lock()?,Yes,I want my program to terminate,Yes,No,,A manageable amount,For performance,Yes,I want my program to terminate,Yes
+2020/12/17 3:12:42 PM GMT+11,Yes,No,.lock()?,No,,,No,,A manageable amount,,,,
+2020/12/17 3:15:47 PM GMT+11,Yes,No,.lock().unwrap();.lock()?,No,I want my program to terminate; Terminate!!!!!,No,No,,None,,,,
+2020/12/17 3:40:52 PM GMT+11,Yes,Yes,.lock().unwrap(),No,I never want my program to terminate;I want to access the data again;I want to check and fix the data,No,No,,None,To avoid having to write .lock.unwrap();For performance;For async/await,No,,No
+2020/12/17 4:23:38 PM GMT+11,Yes,Yes,.lock().unwrap(),No,I want my program to terminate;I never want to access the data again,Yes,No,,A manageable amount,For async/await,No,I want my program to terminate;I never want to access the data again,Yes
+2020/12/17 4:49:10 PM GMT+11,Yes,No,.lock().unwrap(),Yes,I want my program to terminate;I never want to access the data again,Yes,No,,A manageable amount,,No,,No
+2020/12/17 4:53:10 PM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I want my program to terminate;I never want to access the data again,No,No,,A manageable amount,For performance;The standard parking strategy wasn't a good fit for me. ,No,"I want my program to terminate;I never want to access the data again;Basically, all my programs are always expected to not panic (or at least catch it before it leaves the ""main"" fn of the thread). If they do, something's really wrong. I want it logged and the program terminated, but recovering isn't really an option.",No
+2020/12/17 5:44:57 PM GMT+11,Yes,No,.lock().unwrap(),Yes,I want my program to terminate,No,No,,None,,,,
+2020/12/17 5:48:04 PM GMT+11,Yes,Yes,.lock().unwrap();.lock()?,Yes,I want my program to terminate;I want to access the data again,No,No,,None,To avoid having to write .lock.unwrap();For performance;For no-std;For async/await,No,,Yes
+2020/12/17 6:03:28 PM GMT+11,Yes,No,.lock().unwrap(),No,I never want my program to terminate;I want to check and fix the data,No,No,,None,,,,
+2020/12/17 6:25:41 PM GMT+11,Yes,Yes,.lock().unwrap(),No,,No,No,,None,For no-std;For async/await,No,,No
+2020/12/17 6:51:53 PM GMT+11,Yes,No,.lock().unwrap();.lock().unwrap_or_else(PoisonGuard::into_inner),Yes,I want my program to terminate;I never want my program to terminate;I want to check and fix the data;I never want to access the data again,Yes,No,,A manageable amount,For performance;For no-std;For async/await,No,,Yes
+2020/12/17 6:57:31 PM GMT+11,Yes,No,.lock().unwrap();.lock()?,No,,No,No,,A manageable amount,,,,Yes
+2020/12/17 6:59:33 PM GMT+11,Yes,Yes,.lock().unwrap(),No,I want my program to terminate,No,No,,None,To avoid having to write .lock.unwrap();For performance,No,I want my program to terminate,No
+2020/12/17 7:31:28 PM GMT+11,No,Yes,.lock(),No,,No,No,,None,To avoid having to write .lock.unwrap(),No,,No
+2020/12/17 7:37:46 PM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate;I never want to access the data again,Yes,No,,None,,,,
+2020/12/17 7:39:19 PM GMT+11,Yes,No,.lock().unwrap(),Yes,I want to access the data again,Yes,Yes,,,,,,
+2020/12/17 8:04:51 PM GMT+11,Yes,No,.lock()?,Yes,I never want my program to terminate;I want to check and fix the data,No,No,,None,For performance;For async/await,No,I never want my program to terminate;I want to check and fix the data,No
+2020/12/17 8:08:45 PM GMT+11,Yes,No,.lock().unwrap();.lock()?,No,I want my program to terminate;I never want to access the data again,Yes,No,,A manageable amount,,,,
+2020/12/17 8:24:38 PM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate,Yes,No,,A manageable amount,,No,,Yes
+2020/12/17 8:35:19 PM GMT+11,Yes,Yes,.lock().unwrap(),Yes,"I want my program to terminate;I want NOT terminating to be a rare inconvenient exception, not the obvious default. I rarely want to care about or recover from poison.",No,Yes,I pass refcounted structs containing mutexes in pub fields to callbacks... Not ideal design perhaps :],A manageable amount,For performance;For async/await,No,,Yes
+2020/12/17 8:48:06 PM GMT+11,Yes,Yes,.lock().unwrap(),Yes,"I want my program to terminate;I never want my program to terminate;Sometimes I want a rollback of the data to the pre-locked state, maybe CoW or WriteOnLock",Yes,No,I hide these types with my own guard types that contain more meta-data,None,To avoid having to write .lock.unwrap();For performance,No,I never want my program to terminate;I want to access the data again;I want to rollback,Yes
+2020/12/17 8:49:32 PM GMT+11,Yes,No,.lock().unwrap();.lock()?,No,,Yes,No,,A manageable amount,,,,
+2020/12/17 9:06:23 PM GMT+11,Yes,No,.lock().unwrap();.lock()?,Yes,I want my program to terminate,Yes,Yes,As `Arc<Mutex<SomeType>>` in function parameters,A manageable amount,,,,
+2020/12/17 9:18:37 PM GMT+11,Yes,No,.lock().unwrap();.lock()?,No,I want my program to terminate;I want to check and fix the data;I never want to access the data again,Yes,No,,A manageable amount,,,,
+2020/12/17 10:03:56 PM GMT+11,Yes,No,.lock().unwrap(),No,I want to access the data again;I want to check and fix the data,No,No,,,For performance,No,I want to check and fix the data,Yes
+2020/12/17 10:31:34 PM GMT+11,Yes,No,.lock().unwrap(),No,I never want to access the data again,Yes,Yes,,A manageable amount,,,,
+2020/12/17 11:33:14 PM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I want my program to terminate,Yes,No,,Too much,For async/await,No,I want my program to terminate,No
+2020/12/17 11:57:23 PM GMT+11,Yes,No,.lock().unwrap();.lock()?,Yes,"I want my program to terminate;I never want my program to terminate;I want to access the data again;I never want to access the data again;The good things with poisonning in std, is that it gives us a confidence that none of the dependent crates silently ignores poisonned mutexes. If we want to get rid of the costs of it is not necessary, I would prefer that std supports the two APIs (w/ and w/o poisonning) but does panic tracking for both and that we introduce a compilation flag to allow disabling panic-tracking for the code using the non-poisonning API. ",Yes,No,,A manageable amount,,,,
+2020/12/18 12:42:54 AM GMT+11,Yes,No,.lock().unwrap();.lock()?,No,I want my program to terminate;I want to check and fix the data,Yes,Yes,,A manageable amount,,,,
+2020/12/18 1:06:21 AM GMT+11,Yes,No,.lock().unwrap();.lock()?,Yes,I want my program to terminate,No,No,,A manageable amount,,No,,No
+2020/12/18 1:38:42 AM GMT+11,Yes,No,.lock().unwrap(),No,,No,No,,None,,No,,No
+2020/12/18 1:40:53 AM GMT+11,Yes,No,.lock()?,No,,No,No,,A manageable amount,,,,Yes
+2020/12/18 1:53:16 AM GMT+11,No,Yes,.lock().unwrap(),No,I want my program to terminate,No,No,,None,To avoid having to write .lock.unwrap();For performance,No,I want my program to terminate,No
+2020/12/18 1:59:22 AM GMT+11,Yes,Yes,.lock().unwrap();.lock().map_err(|e| OmgItIsCorruptedError)? or the equivalent .lock()? with a From impl,Yes,I want my program to terminate;I never want my program to terminate;I want to access the data again,No,No,,A manageable amount,To avoid having to write .lock.unwrap();For performance;For async/await;for static lock-wrapped objects without lazy_static,No,I want my program to terminate;I never want my program to terminate;I want to access the data again,Yes
+2020/12/18 2:13:27 AM GMT+11,Yes,Yes,.lock().unwrap();.lock()?,Yes,I want my program to terminate;I want to access the data again,No,Yes,,A manageable amount,For performance;For no-std,Yes,I want my program to terminate;I want to check and fix the data,Yes
+2020/12/18 3:06:38 AM GMT+11,Yes,Yes,.lock().unwrap();.lock()?,Yes,I want my program to terminate;I want to check and fix the data,No,,,A manageable amount,For performance;For async/await,No,I want my program to terminate;I want to check and fix the data,
+2020/12/18 3:37:23 AM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate;I want to check and fix the data,Yes,No,,A manageable amount,,No,,No
+2020/12/18 3:45:16 AM GMT+11,No,Yes,.lock(),No,I want to access the data again,No,No,,None,To avoid having to write .lock.unwrap();For performance,No,I want to access the data again;I want to check and fix the data,No
+2020/12/18 4:00:01 AM GMT+11,No,Yes,.lock()?,No,,No,No,,None,For async/await,No,I want my program to terminate,No
+2020/12/18 4:20:20 AM GMT+11,Yes,Yes,.lock().unwrap(),No,I want my program to terminate,No,No,,None,For async/await,No,I want my program to terminate,No
+2020/12/18 5:29:32 AM GMT+11,Yes,Yes,.lock()?,Yes,I want my program to terminate,No,No,,None,To avoid having to write .lock.unwrap();For performance,No,,No
+2020/12/18 5:41:27 AM GMT+11,Yes,No,.lock().unwrap(),No,,No,No,,A manageable amount,,,,
+2020/12/18 5:50:52 AM GMT+11,Yes,No,.lock()?,Yes,I want to access the data again;I want to propogate the error and let the library user decide,Yes,No,,A manageable amount,,,,
+2020/12/18 6:04:44 AM GMT+11,Yes,No,.lock().unwrap(),Yes,I never want my program to terminate;I want to access the data again;I want to check and fix the data,No,No,,A manageable amount,,,,
+2020/12/18 6:27:24 AM GMT+11,Yes,Yes,.lock().unwrap();.lock()?,No,I never want to access the data again,No,No,,A manageable amount,To avoid having to write .lock.unwrap();For performance;For async/await,No,,No
+2020/12/18 6:31:38 AM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate,No,No,,None,,,,No
+2020/12/18 6:40:11 AM GMT+11,No,No,,,,,,,,,,,
+2020/12/18 7:29:19 AM GMT+11,Yes,No,.lock().unwrap(),No,,No,No,,None,For async/await,No,,No
+2020/12/18 7:40:57 AM GMT+11,Yes,Yes,.lock().unwrap(),No,I want to access the data again;I want to check and fix the data,No,No,,A manageable amount,To avoid having to write .lock.unwrap();For performance,No,I want my program to terminate;I want to access the data again;I want to check and fix the data,Yes
+2020/12/18 7:43:00 AM GMT+11,Yes,No,.lock().unwrap(),No,,Yes,No,,None,,No,,Yes
+2020/12/18 8:09:48 AM GMT+11,Yes,No,.lock().unwrap(),No,,Yes,No,,A manageable amount,,No,I want my program to terminate;I want to check and fix the data,Yes
+2020/12/18 8:22:16 AM GMT+11,Yes,Yes,.lock()?,No,,Yes,No,,A manageable amount,For async/await,No,I never want to access the data again,Yes
+2020/12/18 9:23:10 AM GMT+11,Yes,No,.lock()?,No,I want to check and fix the data;I never want to access the data again,No,No,,A manageable amount,,,,
+2020/12/18 9:54:54 AM GMT+11,Yes,No,.lock().unwrap(),Yes,I want my program to terminate;I never want my program to terminate;I never want to access the data again,,No,,None,,,,Yes
+2020/12/18 10:30:46 AM GMT+11,Yes,No,.lock().unwrap(),Yes,I want my program to terminate;I never want my program to terminate,No,No,,None,For performance,No,I want my program to terminate,Yes
+2020/12/18 10:39:58 AM GMT+11,Yes,No,.lock().unwrap();.lock()?,No,I want my program to terminate;I want to check and fix the data;I never want to access the data again,Yes,No,,None,For async/await,No,,Yes
+2020/12/18 10:59:58 AM GMT+11,Yes,No,.lock().unwrap();.lock()?,No,,No,No,,A manageable amount,,,,
+2020/12/18 11:55:05 AM GMT+11,Yes,Yes,.lock().unwrap(),No,,No,No,,A manageable amount,To avoid having to write .lock.unwrap(),No,I want my program to terminate,No
+2020/12/18 1:44:43 PM GMT+11,No,Yes,.lock()?,Yes,"I never want my program to terminate;I don’t want my program to crash, but I do want to be able to identify the issue (via logging/tracing) and then roll a fix ASAP. ",No,No,,A manageable amount,For performance;For no-std;For async/await,No,,Yes
+2020/12/18 1:55:02 PM GMT+11,Yes,No,.lock().unwrap(),Yes,I want to check and fix the data;I want to reset the locks poisoned state.,No,No,,A manageable amount,,,,
+2020/12/18 2:34:39 PM GMT+11,Yes,No,.lock().unwrap(),Yes,I want my program to terminate;I never want to access the data again,No,No,,None,,,,
+2020/12/18 4:10:52 PM GMT+11,Yes,Yes,.lock()?,No,,No,No,,None,For performance,No,,Yes
+2020/12/18 4:11:01 PM GMT+11,Yes,Yes,.lock()?,No,,No,No,,None,For performance,No,,Yes
+2020/12/18 5:56:49 PM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I want my program to terminate,Yes,No,,A manageable amount,For performance,No,,Yes
+2020/12/18 6:49:43 PM GMT+11,No,Yes,,,,,,,,For async/await,No,,Yes
+2020/12/18 7:46:36 PM GMT+11,Yes,No,.lock().unwrap(),No,,No,No,,A manageable amount,,No,,Yes
+2020/12/18 8:43:01 PM GMT+11,Yes,Yes,.lock().unwrap(),No,I want my program to terminate,No,No,,None,For async/await,No,,No
+2020/12/18 8:52:43 PM GMT+11,Yes,No,.lock().unwrap(),Yes,I want my program to terminate;I never want to access the data again,Yes,No,,A manageable amount,,,,
+2020/12/18 8:56:11 PM GMT+11,Yes,No,.lock().unwrap(),No,,No,No,,None,,No,,
+2020/12/18 9:11:17 PM GMT+11,No,No,,,,,,,,,,,
+2020/12/18 9:12:51 PM GMT+11,Yes,No,.lock().unwrap();.lock()?,Yes,I want to access the data again,No,No,,A manageable amount,To avoid having to write .lock.unwrap();For performance;For no-std;For async/await,No,I want to access the data again,No
+2020/12/18 9:24:23 PM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I want my program to terminate,Yes,No,,None,For performance,No,I want my program to terminate,Yes
+2020/12/18 9:30:16 PM GMT+11,Yes,No,.lock().unwrap(),Yes,I want my program to terminate;I want to access the data again,Yes,No,,,,No,,No
+2020/12/18 9:30:50 PM GMT+11,Yes,Yes,.lock().unwrap();.lock()?,No,,No,No,,A manageable amount,For async/await,No,,No
+2020/12/18 10:55:10 PM GMT+11,Yes,Yes,.lock().unwrap();.lock().unwrap_or_else(PoisonGuard::into_inner),Yes,I want my program to terminate;I want to access the data again,No,No,,None,To avoid having to write .lock.unwrap();For performance,No,I want my program to terminate;I want to access the data again,No
+2020/12/18 11:23:18 PM GMT+11,Yes,No,.lock().unwrap();.lock()?,Yes,I want my program to terminate,Yes,No,,A manageable amount,,No,I want my program to terminate;I never want my program to terminate;I never want to access the data again,Yes
+2020/12/18 11:52:07 PM GMT+11,Yes,Yes,.lock().unwrap();.lock()?,No,I never want my program to terminate;I want to check and fix the data,No,No,,A manageable amount,To avoid having to write .lock.unwrap();For performance,Yes,I never want my program to terminate;I want to check and fix the data,Yes
+2020/12/19 12:21:11 AM GMT+11,Yes,Yes,.lock().unwrap(),No,I want my program to terminate,Yes,No,,A manageable amount,For no-std,No,I want my program to terminate,No
+2020/12/19 12:42:14 AM GMT+11,Yes,No,.lock().unwrap();.lock()?,No,I want my program to terminate,Yes,No,,A manageable amount,,No,,Yes
+2020/12/19 1:11:28 AM GMT+11,Yes,Yes,.lock().unwrap();.lock().unwrap_or_else(PoisonGuard::into_inner),Yes,I want my program to terminate;I want to access the data again;I never want to access the data again,Yes,No,,A manageable amount,For performance,Yes,I want my program to terminate,
+2020/12/19 1:36:29 AM GMT+11,Yes,Yes,.lock().unwrap();.lock()?;.lock().unwrap_or_else(PoisonGuard::into_inner),No,I never want my program to terminate;I want to access the data again;I want to check and fix the data,No,No,,None,To avoid having to write .lock.unwrap();For performance,No,,No
+2020/12/19 4:13:15 AM GMT+11,Yes,Yes,.lock().unwrap(),No,"I want my program to terminate;I never want my program to terminate;I want to access the data again;I never want to access the data again;Usually kill the offending thread/future and throw away its data, but don't stop the program. Or ignore poisoning completely, just unlock the lock.",No,No,,None,To avoid having to write .lock.unwrap();For performance;For async/await,No,"I want to access the data again;Almost always I lock just for threadsafety, not consistency under the lock.",No
+2020/12/19 5:07:13 AM GMT+11,Yes,Yes,.lock().unwrap(),No,I never want my program to terminate;I want to access the data again,No,No,,None,To avoid having to write .lock.unwrap();For performance;For async/await,No,,No
+2020/12/19 5:33:52 AM GMT+11,Yes,Yes,.lock()?,No,,,No,,None,For async/await,No,,
+2020/12/19 5:50:44 AM GMT+11,Yes,Yes,.lock()?;.lock().unwrap_or_else(PoisonGuard::into_inner),Yes,I want my program to terminate;I never want my program to terminate;I never want to access the data again,Yes,Yes,Provide hooks to deal with poisoning for no-crash system. ,A manageable amount,For no-std,Yes,I want my program to terminate;I never want my program to terminate;I never want to access the data again,Yes
+2020/12/19 6:10:33 AM GMT+11,Yes,No,.lock().unwrap(),Yes,I never want my program to terminate;I want to check and fix the data,No,No,,A manageable amount,,,,
+2020/12/19 6:30:08 AM GMT+11,Yes,Yes,.lock()?,No,,No,No,,None,To avoid having to write .lock.unwrap();For performance;For no-std,No,,Yes
+2020/12/19 6:36:59 AM GMT+11,Yes,Yes,.lock().unwrap(),No,I want my program to terminate,No,Yes,fn get(&self) -> impl Deref<Target=InnerType> { self.mutex.lock().unwrap() },A manageable amount,To avoid having to write .lock.unwrap();For performance;For async/await,No,,No
+2020/12/19 6:49:38 AM GMT+11,No,Yes,.lock().unwrap(),Yes,I never want my program to terminate;I want to access the data again,No,Yes,Requiring an input to be given as an Arc<Mutex<>> or returning such a type,A manageable amount,To avoid having to write .lock.unwrap();For performance,No,,Yes
+2020/12/19 7:04:42 AM GMT+11,Yes,No,.lock().unwrap(),No,,No,No,,None,For async/await,No,I want to check and fix the data;I never want to access the data again,Yes
+2020/12/19 8:11:37 AM GMT+11,Yes,No,.lock().unwrap(),Yes,I never want my program to terminate;I never want to access the data again,No,No,,None,For no-std,Yes,I never want my program to terminate;I never want to access the data again;I want a part of my program to terminate and restart while keeping the rest running.,Yes
+2020/12/19 8:15:16 AM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate,,,,,For async/await,No,I want my program to terminate,
+2020/12/19 8:54:23 AM GMT+11,Yes,Yes,.lock().unwrap_or_else(PoisonGuard::into_inner),No,I want to access the data again,No,No,,A manageable amount,For async/await,No,I want to access the data again,No
+2020/12/19 9:15:19 AM GMT+11,Yes,No,.lock().unwrap(),Yes,I never want my program to terminate,No,No,,None,,No,,No
+2020/12/19 10:05:57 AM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I never want to access the data again,Yes,,,A manageable amount,To avoid having to write .lock.unwrap();For performance;For no-std;For async/await,,I want my program to terminate,Yes
+2020/12/19 10:25:39 AM GMT+11,Yes,Yes,.lock().unwrap_or_else(PoisonGuard::into_inner),Yes,I want to check and fix the data,Yes,No,,A manageable amount,To avoid having to write .lock.unwrap(),No,I want my program to terminate,Yes
+2020/12/19 11:08:49 AM GMT+11,Yes,Yes,.lock().unwrap(),No,I want my program to terminate,No,No,,None,For performance,No,,No
+2020/12/19 11:16:58 AM GMT+11,Yes,No,.lock().unwrap(),Yes,I want my program to terminate;I never want to access the data again,No,Yes,,None,,,,
+2020/12/19 11:24:18 AM GMT+11,Yes,No,.lock().unwrap();.lock()?,Yes,I want my program to terminate;I want to access the data again;I never want to access the data again,No,No,,None,,,,
+2020/12/19 11:59:32 AM GMT+11,Yes,Yes,.lock().unwrap(),No,,Yes,No,,None,To avoid having to write .lock.unwrap();For async/await,No,,Yes
+2020/12/19 1:23:40 PM GMT+11,Yes,No,.lock().unwrap(),No,,No,No,,A manageable amount,For async/await,No,,No
+2020/12/19 1:28:25 PM GMT+11,Yes,No,.lock().unwrap(),No,I never want my program to terminate;I never want to access the data again,Yes,No,,A manageable amount,,,,
+2020/12/19 1:32:20 PM GMT+11,Yes,No,.lock().unwrap();.lock()?;.lock().unwrap_or_else(PoisonGuard::into_inner),No,I want my program to terminate;I want to access the data again,Yes,No,,A manageable amount,,No,,Yes
+2020/12/19 3:16:22 PM GMT+11,Yes,Yes,.lock().unwrap_or_else(PoisonGuard::into_inner),Yes,I want my program to terminate;I never want my program to terminate;I want to access the data again;I want to check and fix the data,Yes,No,,None,additional functionality not provided by the standard library,No,,Yes
+2020/12/19 3:34:51 PM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate,No,No,,None,,,,
+2020/12/19 9:18:58 PM GMT+11,Yes,No,.lock()?,No,I want to access the data again;I want to check and fix the data,No,No,,A manageable amount,,Yes,I want to access the data again;I want to check and fix the data,No
+2020/12/19 10:36:46 PM GMT+11,Yes,Yes,.lock().unwrap();.lock()?,Yes,I want my program to terminate;I never want to access the data again,No,No,,None,To avoid having to write .lock.unwrap();For performance;For no-std;For async/await,Yes,I want my program to terminate,Yes
+2020/12/19 11:05:21 PM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I want my program to terminate,,No,,A manageable amount,For async/await,No,I want my program to terminate,Yes
+2020/12/19 11:24:45 PM GMT+11,Yes,No,.lock().unwrap();.lock()?,No,I never want my program to terminate;I want to access the data again;I want to check and fix the data,No,No,,None,,No,,Yes
+2020/12/19 11:46:03 PM GMT+11,Yes,Yes,.lock()?,Yes,"Depends on the use case. In many cases, I want to abort the current task but not the whole program.",Yes,,,A manageable amount,For async/await,No,,Yes
+2020/12/20 1:59:59 AM GMT+11,Yes,Yes,.lock().unwrap(),No,Depends on the program ,Yes,No,,None,For performance;For async/await,No,Depends on the lock and the program ,Yes
+2020/12/20 2:02:39 AM GMT+11,Yes,No,.lock().unwrap(),No,,No,No,,None,,,,
+2020/12/20 2:09:03 AM GMT+11,Yes,Yes,.lock().unwrap(),No,I want my program to terminate,No,No,,A manageable amount,To avoid having to write .lock.unwrap(),No,,No
+2020/12/20 2:31:49 AM GMT+11,Yes,No,.lock().unwrap(),No,I want to check and fix the data,No,No,,,,,,
+2020/12/20 3:44:01 AM GMT+11,Yes,No,".lock().unwrap();.lock().except(""lock poisoned"")",Yes,"Depends on specific program, can't say for sure",,No,,None,,No,,No
+2020/12/20 4:29:26 AM GMT+11,Yes,No,.lock()?,Yes,I never want my program to terminate;I want to access the data again;I want to check and fix the data,Yes,No,,A manageable amount,,,,
+2020/12/20 5:02:39 AM GMT+11,Yes,No,.lock()?,No,I want my program to terminate;I want to check and fix the data;I never want to access the data again,Yes,No,,None,,,,
+2020/12/20 5:07:18 AM GMT+11,Yes,Yes,.lock()?,No,I never want my program to terminate;I want to check and fix the data,No,No,,A manageable amount,To avoid having to write .lock.unwrap();For async/await,Yes,I never want my program to terminate;I want to check and fix the data,Yes
+2020/12/20 8:26:52 AM GMT+11,Yes,Yes,.lock().unwrap(),No,,No,No,,A manageable amount,To avoid having to write .lock.unwrap();For performance;For async/await,No,,No
+2020/12/20 8:50:29 AM GMT+11,Yes,Yes,.lock().unwrap(),No,I want my program to terminate;I want to access the data again;I want to check and fix the data;Log the data for debugging / manual restoration if needed,No,Yes,https://docs.rs/read_write_at/0.1.0/src/read_write_at/lib.rs.html#357,None,To avoid having to write .lock.unwrap();For performance,No,"I typically build with panic=abort for release, so poisoning does not matter at all.",No
+2020/12/20 8:55:08 AM GMT+11,Yes,Yes,.lock().unwrap(),No,I want my program to terminate,No,No,,A manageable amount,For performance,No,I want my program to terminate,Yes
+2020/12/20 9:00:54 AM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate;I never want to access the data again,No,No,,None,,No,,
+2020/12/20 10:20:47 AM GMT+11,Yes,Yes,.lock()?,Yes,I never want my program to terminate;I want to check and fix the data,No,No,,None,For performance,Yes,I never want my program to terminate;I want to check and fix the data,Yes
+2020/12/20 4:05:24 PM GMT+11,No,No,,,,,,,,,,,
+2020/12/20 7:58:40 PM GMT+11,Yes,No,.lock().unwrap();.lock()?,Yes,I want my program to terminate;I want to check and fix the data,Yes,No,,A manageable amount,,,,
+2020/12/20 9:28:41 PM GMT+11,Yes,No,.lock().unwrap(),No,,No,No,,A manageable amount,,,,
+2020/12/20 9:39:12 PM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I want to check and fix the data,No,Yes,,A manageable amount,To avoid having to write .lock.unwrap();For async/await,No,,Yes
+2020/12/20 9:54:52 PM GMT+11,Yes,Yes,.lock().unwrap();.lock()?,No,I want my program to terminate,No,No,,None,For performance,No,I want my program to terminate,
+2020/12/20 10:28:18 PM GMT+11,Yes,Yes,.lock().unwrap(),No,,No,No,,None,For async/await,No,,No
+2020/12/21 2:57:29 AM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I want my program to terminate;I never want to access the data again,Yes,Yes,Seriaization crate which has serialization trait impls for Mutex-guarded data. ,A manageable amount,For performance,No,I never want to access the data again,No
+2020/12/21 5:13:48 AM GMT+11,Yes,Yes,.lock().unwrap(),No,I never want my program to terminate;I want to access the data again,No,No,,A manageable amount,For no-std;For async/await,No,,No
+2020/12/21 5:26:24 AM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I want my program to terminate;I never want to access the data again,Yes,No,,A manageable amount,For performance,No,,
+2020/12/21 6:18:23 AM GMT+11,Yes,No,.lock().unwrap(),Yes,I want to access the data again,No,No,,None,,No,,No
+2020/12/21 6:37:21 AM GMT+11,Yes,Yes,.lock().unwrap();.lock()?,No,I want to access the data again,No,No,,None,For async/await,No,,Yes
+2020/12/21 8:06:02 AM GMT+11,Yes,Yes,.lock()?,Yes,I never want my program to terminate;I want to access the data again;I want to check and fix the data,No,No,,None,To avoid having to write .lock.unwrap();For async/await,No,,No
+2020/12/21 2:32:04 PM GMT+11,Yes,No,.lock().unwrap(),No,,No,,,A manageable amount,For no-std,No,,
+2020/12/21 2:49:27 PM GMT+11,No,Yes,.lock(),No,I want my program to terminate,No,No,,A manageable amount,To avoid having to write .lock.unwrap();For async/await;rwlock guaranteed writer priority of parking_lot,No,I want my program to terminate,No
+2020/12/21 3:27:53 PM GMT+11,No,No,.lock().unwrap(),No,,No,No,,None,To avoid having to write .lock.unwrap();For performance,No,,No
+2020/12/21 7:54:27 PM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate,,No,,None,,No,,No
+2020/12/21 11:10:19 PM GMT+11,Yes,No,.lock().unwrap();.lock()?,Yes,I want my program to terminate,Yes,No,,A manageable amount,,,,
+2020/12/22 12:57:03 AM GMT+11,Yes,No,.lock().unwrap(),Yes,I want my program to terminate;I never want to access the data again,No,No,,None,,,,
+2020/12/22 1:38:33 AM GMT+11,Yes,Yes,.lock().unwrap();.lock()?,No,,No,Yes,Arc<Mutex<[...]>> often appears for functions callable from any thread,A manageable amount,For async/await,No,,No
+2020/12/22 1:54:25 AM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I want my program to terminate;I never want to access the data again,,Yes,"```
+pub fn state(&self) -> MutexGuard<ThingState> {
+        self.state.lock().unwrap()
+ }
+```",A manageable amount,For performance,No,,Yes
+2020/12/22 2:52:05 AM GMT+11,Yes,No,.lock().unwrap(),No,I want to check and fix the data,No,No,,None,,,,
+2020/12/22 7:40:32 AM GMT+11,Yes,No,.lock().unwrap(),Yes,I want to check and fix the data,No,No,,A manageable amount,,Yes,I want to check and fix the data,Yes
+2020/12/22 8:11:14 AM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I want my program to terminate,No,No,,A manageable amount,For performance,No,,Yes
+2020/12/22 12:14:28 PM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate,Yes,No,,A manageable amount,,,,
+2020/12/22 8:55:08 PM GMT+11,Yes,No,.lock().unwrap();.lock()?,No,I never want my program to terminate;I want to check and fix the data,No,No,,A manageable amount,To avoid having to write .lock.unwrap(),,,
+2020/12/23 12:34:36 AM GMT+11,Yes,No,.lock().unwrap();.lock()?;.lock().unwrap_or_else(PoisonGuard::into_inner),Yes,I want my program to terminate;I want to access the data again;I want to check and fix the data,No,No,,None,To avoid having to write .lock.unwrap();For performance;For async/await,No,I want my program to terminate;I want to check and fix the data,Yes
+2020/12/23 1:59:04 AM GMT+11,Yes,Yes,.lock().unwrap(),No,I never want to access the data again,No,Yes,,None,To avoid having to write .lock.unwrap();For async/await,No,I want my program to terminate,Yes
+2020/12/23 10:01:38 AM GMT+11,Yes,No,.lock().unwrap();.lock().unwrap_or_else(PoisonGuard::into_inner),No,,No,No,,A manageable amount,,,,
+2020/12/23 10:38:01 AM GMT+11,Yes,Yes,.lock().unwrap(),No,,,Yes,,None,For performance,No,,No
+2020/12/23 11:24:39 AM GMT+11,Yes,Yes,.lock().unwrap(),No,,No,No,,A manageable amount,For async/await,No,,Yes
+2020/12/23 12:08:47 PM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate,Yes,No,,A manageable amount,,,,
+2020/12/23 12:13:00 PM GMT+11,Yes,No,.lock()?,No,,No,No,,None,,,,
+2020/12/23 2:53:55 PM GMT+11,Yes,Yes,.lock().unwrap();.lock()?,No,I want my program to terminate;I want to access the data again;I want to check and fix the data,No,No,,A manageable amount,For performance;For no-std;For const fn new(),No,,No
+2020/12/24 1:51:46 PM GMT+11,Yes,No,.lock().unwrap_or_else(PoisonGuard::into_inner),No,,No,No,,A manageable amount,,,,
+2020/12/24 6:58:40 PM GMT+11,No,Yes,lock(),No,I want to check and fix the data,No,No,,A manageable amount,For performance,No,I never want my program to terminate;I want to check and fix the data,No
+2020/12/24 8:13:17 PM GMT+11,Yes,Yes,.lock().unwrap();.lock()?,No,,Yes,No,,A manageable amount,For async/await,No,,Yes
+2020/12/25 12:52:08 PM GMT+11,Yes,Yes,.lock().unwrap(),No,I want my program to terminate;I never want to access the data again,No,Yes,"Usually wraps non-thread safe internal structure in a safe manner by type redeclaration:
+pub type DataMap<K, V> = Mutex<HashMap<K, V>>",A manageable amount,To avoid having to write .lock.unwrap();For performance,Yes,"I want my program to terminate;I want to check and fix the data;I never want to access the data again;In general, I try to avoid the situation where data are poisoned in the first place. In other words, I aim to prevent programs from panicking while holding a lock.",Yes
+2020/12/26 3:32:21 AM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate,No,No,,A manageable amount,,,,
+2020/12/26 5:36:57 AM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate,No,No,,None,,,,
+2020/12/26 11:08:15 AM GMT+11,Yes,No,.lock().unwrap(),No,,,Yes,,None,for guaranteed reader saturation behaviour of RwLock,,,
+2020/12/26 7:17:55 PM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate,No,No,,None,For async/await,No,I want my program to terminate,No
+2020/12/26 7:26:59 PM GMT+11,Yes,No,.lock().unwrap(),Yes,I never want my program to terminate;I want to access the data again,No,No,,A manageable amount,For async/await,No,I never want my program to terminate;I want to access the data again,No
+2020/12/26 8:58:44 PM GMT+11,Yes,No,.lock().unwrap(),No,I want to have the choice between all of these,Yes,No,,None,,,,
+2020/12/26 10:50:35 PM GMT+11,Yes,No,.lock().unwrap(),Yes,I want my program to terminate;I want to check and fix the data,Yes,No,,None,,,,
+2020/12/27 2:26:01 AM GMT+11,Yes,No,.lock().unwrap();.lock().unwrap_or_else(PoisonGuard::into_inner),No,I never want my program to terminate,No,No,,A manageable amount,,No,,Yes
+2020/12/27 2:38:04 AM GMT+11,Yes,No,.lock().unwrap(),Yes,I want my program to terminate,No,No,,None,,No,,No
+2020/12/27 3:52:28 AM GMT+11,Yes,Yes,.lock().unwrap(),No,,,Yes,,None,For async/await,No,,
+2020/12/27 7:28:30 PM GMT+11,Yes,Yes,.lock().unwrap(),No,I want to check and fix the data,Yes,No,,A manageable amount,For async/await,No,,Yes
+2020/12/28 3:03:08 AM GMT+11,Yes,Yes,".lock().unwrap();.lock().expect(""Can't lock .."")",No,I never want my program to terminate,No,No,,A manageable amount,For performance;For async/await,No,I want my program to terminate;I never want my program to terminate,Yes
+2020/12/28 12:39:09 PM GMT+11,Yes,No,.lock().unwrap(),Yes,I want my program to terminate,No,No,,None,,,,
+2020/12/28 2:34:14 PM GMT+11,Yes,Yes,.lock().unwrap(),No,,No,No,,None,To avoid having to write .lock.unwrap();For performance;smaller size + const-time eval,Yes,I want to check and fix the data,Yes
+2020/12/28 6:54:33 PM GMT+11,Yes,Yes,.lock()?;.lock().unwrap_or_else(PoisonGuard::into_inner),Yes,I never want my program to terminate;I want to access the data again;I want to check and fix the data,No,No,,None,For performance;For async/await,No,,Yes
+2020/12/29 6:24:26 AM GMT+11,Yes,No,.lock()?,No,I want to check and fix the data,No,No,,None,For performance;For async/await,No,I want to check and fix the data,Yes
+2020/12/29 6:30:09 AM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I want my program to terminate,Yes,Yes,impl Deref<Mutex<Inner>> for SynchronizedInner { type Target = Mutex<Inner>; /* ... */ },None,For performance;For no-std,No,,Yes
+2020/12/29 9:35:09 AM GMT+11,Yes,Yes,.lock().unwrap(),No,I want my program to terminate,No,No,,A manageable amount,For async/await,No,I want my program to terminate,No
+2020/12/29 11:01:00 AM GMT+11,Yes,Yes,.lock().unwrap(),No,I want my program to terminate;I want to access the data again;I want to check and fix the data;I never want to access the data again,Yes,No,,A manageable amount,For async/await,No,,Yes
+2020/12/30 9:38:44 AM GMT+11,No,Yes,.lock().unwrap(),No,I want my program to terminate;I want to check and fix the data,No,,,None,To avoid having to write .lock.unwrap();For performance,No,,No
+2020/12/30 11:22:31 PM GMT+11,Yes,Yes,.lock().unwrap(),No,I want my program to terminate;I never want to access the data again,No,Yes,,None,To avoid having to write .lock.unwrap();For performance,No,I want my program to terminate;I never want to access the data again,Yes
+2020/12/31 12:16:53 AM GMT+11,Yes,No,.lock().unwrap(),No,I want to access the data again,No,No,,None,,,,
+2020/12/31 10:36:13 AM GMT+11,Yes,Yes,.lock().unwrap();.lock()?,No,,No,No,,None,To avoid having to write .lock.unwrap();For performance,No,why poison?,No
+2020/12/31 10:37:58 PM GMT+11,Yes,Yes,.lock().unwrap(),No,I never want my program to terminate;I want to access the data again,No,No,,None,To avoid having to write .lock.unwrap();For no-std;For async/await,No,,Yes
+2021/01/01 2:44:50 AM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate,No,No,,A manageable amount,,No,,
+2021/01/01 2:48:41 AM GMT+11,Yes,No,.lock().unwrap();.lock()?,No,I never want to access the data again,Yes,No,,A manageable amount,,,,
+2021/01/01 7:07:31 PM GMT+11,Yes,Yes,.lock().unwrap();.lock().unwrap_or_else(PoisonGuard::into_inner),Yes,I want to access the data again;I want my program to have already terminated on the initial panic,No,No,,A manageable amount,"To avoid having to write .lock.unwrap();For async/await;For features like parking_lot’s map, fairness, reentrancy etc",No,,No
+2021/01/01 7:49:56 PM GMT+11,Yes,No,.lock().unwrap();.lock()?,No,I want my program to terminate;I want to access the data again,Yes,No,,A manageable amount,To avoid having to write .lock.unwrap(),No,,Yes
+2021/01/02 6:33:10 AM GMT+11,Yes,No,.lock().unwrap();.lock()?,Yes,I want my program to terminate,No,No,,A manageable amount,For async/await,No,I want my program to terminate,Yes
+2021/01/02 1:29:32 PM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I want my program to terminate,No,No,,A manageable amount,To avoid having to write .lock.unwrap();For performance,No,I want my program to terminate;I want to check and fix the data,Yes
+2021/01/02 9:08:23 PM GMT+11,No,Yes,.lock().unwrap(),Yes,I never want my program to terminate,No,No,,None,"To avoid having to write .lock.unwrap();For performance;For Predictability. I like RwLock having a ""task-fair"" policy, where readers wait for pending writers.",No,I want to access the data again;I want to check and fix the data,Yes
+2021/01/03 6:38:40 AM GMT+11,Yes,No,.lock()?,No,I want my program to terminate;I never want to access the data again,Yes,No,,None,,,,
+2021/01/05 1:09:11 AM GMT+11,Yes,Yes,.lock().unwrap(),No,I want my program to terminate;I want to check and fix the data;I never want to access the data again,No,No,,None,To avoid having to write .lock.unwrap();For performance;For async/await,No,I want my program to terminate;I want to check and fix the data;I never want to access the data again,Yes
+2021/01/05 2:31:07 AM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate,No,No,,A manageable amount,,No,,No
+2021/01/05 9:12:54 AM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I never want to access the data again,Yes,No,,A manageable amount,For performance;For async/await,No,I never want to access the data again,Yes
+2021/01/05 10:31:57 AM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate;I never want to access the data again,Yes,No,,A manageable amount,,,,
+2021/01/05 10:55:47 AM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate;I want to check and fix the data,No,No,,A manageable amount,,No,,Yes
+2021/01/05 11:23:18 AM GMT+11,Yes,No,.lock().unwrap();.lock()?,No,I want my program to terminate;I want to check and fix the data,Yes,No,,A manageable amount,,No,,Yes
+2021/01/05 6:00:13 PM GMT+11,Yes,No,.lock()?,Yes,I want my program to terminate,Yes,No,,A manageable amount,,,,Yes
+2021/01/08 12:44:04 PM GMT+11,Yes,Yes,.lock().unwrap();.lock()?,Yes,I want my program to terminate;I want to access the data again;I want to check and fix the data,Yes,Yes,,A manageable amount,For async/await,Yes,I want my program to terminate;I want to check and fix the data,Yes
+2021/01/10 12:20:20 PM GMT+11,No,No,,No,,,No,,None,,,,
+2021/01/10 2:48:47 PM GMT+11,Yes,No,.lock()?;lock().await.,No,I want my program to terminate,No,No,,A manageable amount,For async/await,No,I want my program to terminate,Yes
+2021/01/11 2:51:58 PM GMT+11,Yes,No,.lock().unwrap(),No,I want my program to terminate;I never want to access the data again,Yes,No,,None,,,,
+2021/01/11 4:09:24 PM GMT+11,Yes,No,.lock().unwrap(),No,,No,No,,None,,,,
+2021/01/11 10:31:53 PM GMT+11,Yes,Yes,let _ = mtx.lock();,No,I want to access the data again;I want to check and fix the data,No,No,,A manageable amount,For async/await,No,I want to access the data again;I want to check and fix the data,No
+2021/01/12 9:04:33 AM GMT+11,Yes,Yes,.lock().unwrap(),No,,No,No,,None,For performance,No,,No
+2021/01/12 11:34:24 PM GMT+11,Yes,No,.lock()?,Yes,I want my program to terminate;I want to check and fix the data,Yes,No,,A manageable amount,,,,
+2021/01/13 5:54:21 PM GMT+11,Yes,Yes,.lock().unwrap(),Yes,I want to access the data again,Yes,Yes,,A manageable amount,For performance,No,I want to access the data again,Yes
+2021/01/14 8:23:22 AM GMT+11,Yes,Yes,.lock().unwrap(),No,,Yes,No,,None,To avoid having to write .lock.unwrap();For performance;For async/await,No,,Yes
+2021/01/15 4:30:00 AM GMT+11,Yes,Yes,.lock()?,No,I want to check and fix the data,No,Yes,,Too much,For performance;For no-std;For async/await,No,I want to check and fix the data,Yes
+2021/01/16 5:27:13 AM GMT+11,Yes,Yes,.lock().unwrap(),No,I want my program to terminate,No,Yes,Passing guards as arguments to methods ,A manageable amount,For async/await,No,,Yes
+2021/01/16 3:33:20 PM GMT+11,Yes,Yes,.lock().unwrap(),No,I want my program to terminate,No,No,,None,To avoid having to write .lock.unwrap();For performance;For async/await,No,,Yes

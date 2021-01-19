@@ -1,0 +1,25 @@
+[package]
+name = "poisoning-survey"
+version = "0.0.0"
+authors = ["KodrAus <kodraus@hey.com>"]
+edition = "2018"
+
+[[bin]]
+name = "poisoning-survey"
+path = "main.rs"
+
+[dependencies.csv]
+version = "1"
+
+[dependencies.serde_json]
+version = "1"
+
+[dependencies.serde_derive]
+version = "1"
+
+[dependencies.serde]
+version = "1"
+
+[dependencies.time]
+version = "0.2"
+features = ["serde"]
