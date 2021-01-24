@@ -9,6 +9,10 @@ supports the wider ecosystem of library builders.
 - **Where to find us:** You can reach out to us on [Zulip](https://rust-lang.zulipchat.com).
 - **Calendar:** You can find Libs meetings on our [Google Calendar](https://calendar.google.com/calendar/embed?src=9kuu8evq4eh6uacm262k0phri8%40group.calendar.google.com). You can also subscribe to the [ICS](https://calendar.google.com/calendar/ical/9kuu8evq4eh6uacm262k0phri8%40group.calendar.google.com/public/basic.ics) to keep up to date.
 
+## Docs for contributors and reviewers
+
+See [The Standard Library Dev Guide](https://github.com/rust-lang/std-dev-guide) for documentation on how to work on the standard library itself.
+
 ## A broad picture
 
 See [this project board](https://github.com/rust-lang/libs-team/projects/2) for a big picture of everything that's tracked by the library team.
