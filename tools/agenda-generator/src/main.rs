@@ -52,7 +52,6 @@ fn show_fcps() -> Result<()> {
         "KodrAus",
         "m-ou-se",
         "sfackler",
-        "withoutboats",
     ]
     .iter()
     .map(|&r| (r, 0))
