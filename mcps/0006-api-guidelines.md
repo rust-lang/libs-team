@@ -7,7 +7,7 @@ There are some new language features like `impl Trait` and `async` / `await` tha
 
 As of this writing, it's been about two years since any substantial new content was added to the API Guidelines.
 That's not necessarily an issue, we could consider the API Guidelines "done" for the 2018 language edition.
-Coming up to 2021 we should revist existing recommendations and see if any new ones have come up that make sense for the new edition.
+Coming up to 2021 we should revisit existing recommendations and see if any new ones have come up that make sense for the new edition.
 
 ## Who owns the API Guidelines?
 
