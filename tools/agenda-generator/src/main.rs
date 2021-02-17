@@ -49,6 +49,7 @@ fn show_fcps() -> Result<()> {
         "Amanieu",
         "BurntSushi",
         "dtolnay",
+        "joshtriplett",
         "KodrAus",
         "m-ou-se",
         "sfackler",
