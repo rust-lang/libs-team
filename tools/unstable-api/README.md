@@ -7,7 +7,7 @@ This tool will dump the public API for an unstable feature.
 From this directory, run something like:
 
 ```shell
-cargo run --release -- --feature $feature --repo-root $path_to_rust | rustfmt
+cargo run --release -- --feature $feature --repo-root $path_to_rust
 ```
 
 where `$feature` is the name of the unstable feature and `$path_to_rust` is the path to a local clone of `rust-lang/rust`. You'll probably need to run `x.py` first to make sure submodules are cloned.
@@ -16,8 +16,15 @@ You can also install it as a Cargo tool and use it that way:
 
 ```shell
 cargo install --path .
-cargo unstable-api --feature $feature --repo-root $path_to_rust | rustfmt
+cd $path_to_rust
+cargo unstable-api --feature $feature
 ```
+
+You can leave out the `--repo-root` option when running it inside the `rust-lang/rust` repository.
+
+## Output formatting
+
+On Unix, the output is automatically formatted with `rustfmt` and highlighted with `bat`, if you have those tools installed.
 
 ## Limitations
 
