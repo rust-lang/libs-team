@@ -17,15 +17,18 @@ pub(crate) fn lit_is_str(lit: &syn::Lit, s: &str) -> bool {
 pub(crate) fn empty_block() -> syn::Block {
     syn::Block {
         brace_token: Default::default(),
-        stmts: Default::default(),
+        stmts: vec![syn::Stmt::Expr(empty_expr())],
     }
 }
 
 pub(crate) fn empty_expr() -> syn::Expr {
-    syn::ExprBlock {
-        attrs: vec![],
-        label: None,
-        block: empty_block(),
+    // This is just a `..` token, which is technically a valid expression,
+    // but looks like a placeholder.
+    syn::ExprRange {
+        attrs: Vec::new(),
+        from: None,
+        to: None,
+        limits: syn::RangeLimits::HalfOpen(Default::default()),
     }
     .into()
 }

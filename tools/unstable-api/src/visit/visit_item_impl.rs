@@ -94,7 +94,28 @@ impl<'a> ModuleVisitor<'a> {
             }
         }
 
+        impl<'a, 'ast> Visit<'ast> for ImplTraitForTypeVisitor<'a, '_> {
+            fn visit_impl_item_const(&mut self, _node: &'ast syn::ImplItemConst) {
+                // not relevant
+            }
+
+            fn visit_impl_item_macro(&mut self, node: &'ast syn::ImplItemMacro) {
+                self.0.visit_impl_item_macro(node)
+            }
+
+            fn visit_impl_item_method(&mut self, _node: &'ast syn::ImplItemMethod) {
+                // not relevant
+            }
+
+            fn visit_impl_item_type(&mut self, node: &'ast syn::ImplItemType) {
+                self.0.visit_impl_item_type(node)
+            }
+        }
+
         let is_unstable = self.feature.is_unstable(&node.attrs, None);
+
+        struct ImplTraitForTypeVisitor<'a, 'b>(&'b mut FilteredUnstableItemVisitor<'a, syn::ImplItem>);
+
         let mut visitor = FilteredUnstableItemVisitor {
             feature: Feature {
                 name: self.feature.name,
@@ -104,7 +125,14 @@ impl<'a> ModuleVisitor<'a> {
             // that stability
             items: vec![],
         };
-        visitor.visit_item_impl(node);
+
+        if node.trait_.is_some() {
+            // 'impl Trait for Type { .. }', where only types are relevant.
+            ImplTraitForTypeVisitor(&mut visitor).visit_item_impl(node);
+        } else {
+            // 'impl Type { .. }', where all items are relevant.
+            visitor.visit_item_impl(node);
+        }
 
         // A stable trait impl will always be stable on a stable item but can contain unstable items
         if visitor.is_unstable() {
