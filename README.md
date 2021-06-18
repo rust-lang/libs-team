@@ -1,8 +1,6 @@
 # Libs Team
 
-A home for the Rust library team. The library team develops the user-facing side
-of Rust's standard library, maintains crates in the Rust organization, and
-supports the wider ecosystem of library builders.
+A home for the Rust library team. The library team maintains and manages the Rust standard library, and makes sure crates in the Rust organization are maintained.
 
 ## Quick facts
 
@@ -13,9 +11,12 @@ supports the wider ecosystem of library builders.
 
 See [The Standard Library Dev Guide](https://github.com/rust-lang/std-dev-guide) for documentation on how to work on the standard library itself.
 
+<!--
+oudated :(
 ## A broad picture
 
 See [this project board](https://github.com/rust-lang/libs-team/projects/2) for a big picture of everything that's tracked by the library team.
+-->
 
 ## Project groups
 
