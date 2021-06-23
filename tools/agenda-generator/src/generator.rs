@@ -37,6 +37,7 @@ impl Generator {
 
         IssueQuery::new("Nominated")
             .labels(&["T-libs-api", "I-nominated"])
+            .repo("rust-lang/libs-team")
             .repo("rust-lang/rust")
             .repo("rust-lang/rfcs")
             .write(&mut self)?;
