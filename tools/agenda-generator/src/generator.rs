@@ -321,6 +321,8 @@ impl IssueQuery {
         writeln!(generator.agenda, "### {}", self.name)?;
         writeln!(generator.agenda,)?;
 
+        let mut empty = true;
+
         for repo in &self.repos {
             for labels in &self.labels {
                 let cs_labels = labels.join(",");
@@ -340,10 +342,16 @@ impl IssueQuery {
                     url_labels = url_labels
                 )?;
                 generator.write_issues(&issues)?;
+
+                empty = false;
             }
         }
 
-        writeln!(generator.agenda,)?;
+        if empty {
+            writeln!(generator.agenda, "None")?;
+        }
+
+        writeln!(generator.agenda)?;
 
         Ok(())
     }
