@@ -92,6 +92,13 @@ impl Generator {
             .repo("rust-lang/rfcs")
             .write(&mut self)?;
 
+        IssueQuery::new("Prioritization Requested")
+            .labels(&["T-libs", "I-prioritize"])
+            .labels(&["T-libs-api", "I-prioritize"])
+            .repo("rust-lang/rust")
+            .repo("rust-lang/rfcs")
+            .write(&mut self)?;
+
         IssueQuery::new("Nominated")
             .labels(&["T-libs", "I-nominated"])
             .repo("rust-lang/rust")
@@ -125,12 +132,6 @@ impl Generator {
             .repo("rust-lang/rfcs")
             .write(&mut self)?;
 
-        IssueQuery::new("Prioritization Requested")
-            .labels(&["T-libs", "I-prioritize"])
-            .labels(&["T-libs-api", "I-prioritize"])
-            .repo("rust-lang/rust")
-            .repo("rust-lang/rfcs")
-            .write(&mut self)?;
 
         writeln!(&mut self.agenda,
         "## Actions
