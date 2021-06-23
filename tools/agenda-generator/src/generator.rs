@@ -88,8 +88,6 @@ impl Generator {
         IssueQuery::new("Critical")
             .labels(&["T-libs", "P-critical"])
             .labels(&["T-libs-api", "P-critical"])
-            .labels(&["T-libs", "I-unsound"])
-            .labels(&["T-libs-api", "I-unsound"])
             .repo("rust-lang/rust")
             .repo("rust-lang/rfcs")
             .write(&mut self)?;
