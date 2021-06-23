@@ -134,13 +134,6 @@ impl Generator {
             .repo("rust-lang/rfcs")
             .write(&mut self)?;
 
-        IssueQuery::new("Bugs")
-            .labels(&["T-libs", "C-bug"])
-            .labels(&["T-libs-api", "C-bug"])
-            .repo("rust-lang/rust")
-            .repo("rust-lang/rfcs")
-            .write(&mut self)?;
-
         writeln!(&mut self.agenda,
         "## Actions
 
