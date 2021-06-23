@@ -258,13 +258,16 @@ impl Generator {
 
     fn write_issues(&mut self, issues: &[Issue]) -> Result<()> {
         for issue in issues.iter().rev() {
-            writeln!(
+            write!(
                 self.agenda,
-                "  - [[{}]({})] *{}*",
+                "  - [[{}]({})]",
                 issue.number,
                 issue.html_url,
-                escape(&issue.title)
             )?;
+            for label in issue.labels.iter().filter(|s| s.starts_with("P-")) {
+                write!(self.agenda, " `{}`", label)?;
+            }
+            writeln!(self.agenda, " *{}*", escape(&issue.title).trim())?;
             if issue
                 .labels
                 .iter()
