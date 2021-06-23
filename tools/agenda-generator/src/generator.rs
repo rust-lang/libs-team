@@ -336,10 +336,11 @@ impl IssueQuery {
                 let url_labels = labels.iter().map(|label| format!("label:{}", label)).join("+");
                 writeln!(
                     generator.agenda,
-                    "- [{} `{repo}` items](https://github.com/{repo}/issues?q=is:open+{url_labels})",
+                    "- [{} `{repo}` `{labels}` items](https://github.com/{repo}/issues?q=is:open+{url_labels})",
                     issues.len(),
                     repo = repo,
-                    url_labels = url_labels
+                    labels = labels.join("` `"),
+                    url_labels = url_labels,
                 )?;
                 generator.write_issues(&issues)?;
 
