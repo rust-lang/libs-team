@@ -94,6 +94,13 @@ impl Generator {
             .repo("rust-lang/rfcs")
             .write(&mut self)?;
 
+        IssueQuery::new("Nominated")
+            .labels(&["T-libs", "I-nominated"])
+            .repo("rust-lang/rust")
+            .repo("rust-lang/rfcs")
+            .repo("rust-lang/libs-team")
+            .write(&mut self)?;
+
         IssueQuery::new("Regressions")
             .labels(&["T-libs", "regression-untriaged"])
             .labels(&["T-libs-api", "regression-untriaged"])
