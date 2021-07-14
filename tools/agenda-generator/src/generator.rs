@@ -107,19 +107,6 @@ impl Generator {
             .repo("rust-lang/libs-team")
             .write(&mut self)?;
 
-        IssueQuery::new("Regressions")
-            .labels(&["T-libs", "regression-untriaged"])
-            .labels(&["T-libs-api", "regression-untriaged"])
-            .labels(&["T-libs", "regression-from-stable-to-stable"])
-            .labels(&["T-libs-api", "regression-from-stable-to-stable"])
-            .labels(&["T-libs", "regression-from-stable-to-beta"])
-            .labels(&["T-libs-api", "regression-from-stable-to-beta"])
-            .labels(&["T-libs", "regression-from-stable-to-nightly"])
-            .labels(&["T-libs-api", "regression-from-stable-to-nightly"])
-            .repo("rust-lang/rust")
-            .repo("rust-lang/rfcs")
-            .write(&mut self)?;
-
         IssueQuery::new("Backports")
             .labels(&["T-libs", "stable-nominated"])
             .labels(&["T-libs-api", "stable-nominated"])
@@ -133,6 +120,18 @@ impl Generator {
             .repo("rust-lang/rfcs")
             .write(&mut self)?;
 
+        IssueQuery::new("Regressions")
+            .labels(&["T-libs", "regression-untriaged"])
+            .labels(&["T-libs-api", "regression-untriaged"])
+            .labels(&["T-libs", "regression-from-stable-to-stable"])
+            .labels(&["T-libs-api", "regression-from-stable-to-stable"])
+            .labels(&["T-libs", "regression-from-stable-to-beta"])
+            .labels(&["T-libs-api", "regression-from-stable-to-beta"])
+            .labels(&["T-libs", "regression-from-stable-to-nightly"])
+            .labels(&["T-libs-api", "regression-from-stable-to-nightly"])
+            .repo("rust-lang/rust")
+            .repo("rust-lang/rfcs")
+            .write(&mut self)?;
 
         writeln!(&mut self.agenda,
         "## Actions
