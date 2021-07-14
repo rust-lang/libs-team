@@ -76,6 +76,7 @@ impl Generator {
 ## Agenda
 
 - Triage
+    - [Open Action Items](https://hackmd.io/Uehlc0qUQfWfvY1swYWRgQ)
     - Critical Issues
     - MCPs
 - Anything else?
@@ -136,7 +137,7 @@ impl Generator {
         writeln!(&mut self.agenda,
         "## Actions
 
-- [ ] Reply to all issues/PRs discussed in this meeting, or add them to the [open action items](https://hackmd.io/ovrbJj6CRduRgSA0Wzg2zg).
+- [ ] Reply to all issues/PRs discussed in this meeting, or add them to the [open action items](https://hackmd.io/Uehlc0qUQfWfvY1swYWRgQ).
 "
     )?;
 
