@@ -1,5 +1,5 @@
 use anyhow::Result;
-use chrono::NaiveDateTime;
+use chrono::{Duration, NaiveDateTime};
 use itertools::Itertools;
 use reqwest::header::{AUTHORIZATION, USER_AGENT};
 use serde::de::{DeserializeOwned, Deserializer};
@@ -207,6 +207,14 @@ impl Generator {
         let mut fcps: Vec<FcpWithInfo> =
             reqwest::blocking::get("https://rfcbot.rs/api/all")?.json()?;
         fcps.retain(|fcp| fcp.issue.labels.contains(&label));
+        let waiting_on_author = "S-waiting-on-author".to_string();
+        fcps.retain(|fcp| !fcp.issue.labels.contains(&waiting_on_author));
+        let now = chrono::Utc::now().naive_utc();
+        fcps.retain(|fcp| {
+            let created = fcp.status_comment.created_at;
+            let updated = fcp.status_comment.updated_at;
+            (now - created) > Duration::weeks(4) && (now - updated) > Duration::days(5)
+        });
 
         let reviewer_count = fcps
             .iter()
@@ -219,7 +227,6 @@ impl Generator {
             .iter()
             .map(|fcp| fcp.issue.repository.as_str())
             .collect::<BTreeSet<_>>();
-
 
         writeln!(self.agenda, "### FCPs")?;
         writeln!(self.agenda,)?;
