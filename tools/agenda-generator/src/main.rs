@@ -1,6 +1,6 @@
 use anyhow::Result;
-use generator::Generator;
 use cli::AgendaKind;
+use generator::Generator;
 
 mod cli;
 mod generator;

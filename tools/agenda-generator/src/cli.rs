@@ -1,5 +1,5 @@
-use structopt::StructOpt;
 use structopt::clap::arg_enum;
+use structopt::StructOpt;
 
 #[derive(Debug, StructOpt)]
 pub struct Args {

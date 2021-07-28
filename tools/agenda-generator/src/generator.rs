@@ -1,10 +1,11 @@
-use anyhow::{anyhow, Result};
+use anyhow::Result;
+use chrono::{Duration, NaiveDateTime};
+use itertools::Itertools;
 use reqwest::header::{AUTHORIZATION, USER_AGENT};
 use serde::de::{DeserializeOwned, Deserializer};
 use serde::Deserialize;
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::BTreeSet;
 use std::fmt::Write;
-use itertools::Itertools;
 
 #[derive(Default)]
 pub struct Generator {
@@ -33,7 +34,7 @@ impl Generator {
             chrono::Utc::now().format("%Y-%m-%d")
         )?;
 
-        self.fcps()?;
+        self.fcps(String::from("T-libs-api"))?;
 
         IssueQuery::new("Nominated")
             .labels(&["T-libs-api", "I-nominated"])
@@ -85,6 +86,8 @@ impl Generator {
 ",
             chrono::Utc::now().format("%Y-%m-%d")
         )?;
+
+        self.fcps(String::from("T-libs"))?;
 
         IssueQuery::new("Critical")
             .labels(&["T-libs", "P-critical"])
@@ -144,99 +147,123 @@ impl Generator {
         Ok(self.agenda)
     }
 
-    fn fcps(&mut self) -> Result<()> {
-        let p = reqwest::blocking::get("https://rfcbot.rs")?.text()?;
-        let mut p = p.lines();
-        p.find(|s| s.trim_end() == "<h4><code>T-libs-api</code></h4>")
-            .ok_or_else(|| anyhow!("Missing T-libs-api section"))?;
-
-        let mut fcps = BTreeMap::<&str, Vec<Fcp>>::new();
-        let mut reviewer_count: BTreeMap<&str, usize> = [
-            "Amanieu",
-            "BurntSushi",
-            "dtolnay",
-            "joshtriplett",
-            "m-ou-se",
-            "sfackler",
-            "yaahc",
-        ]
-        .iter()
-        .map(|&r| (r, 0))
-        .collect();
-
-        loop {
-            let line = p.next().unwrap();
-            if line.starts_with("<h4>") || line.starts_with("</html>") {
-                break;
-            }
-            if line.trim() == "<li>" {
-                let disposition = p.next().unwrap().trim().strip_suffix(':').unwrap();
-                let url = p
-                    .next()
-                    .unwrap()
-                    .trim()
-                    .strip_prefix("<b><a href=\"")
-                    .unwrap()
-                    .strip_suffix('"')
-                    .unwrap();
-                assert_eq!(p.next().unwrap().trim(), "target=\"_blank\">");
-                let title_and_number = p.next().unwrap().trim().strip_suffix(")</a></b>").unwrap();
-                let (title, number) = title_and_number.rsplit_once(" (").unwrap();
-                let (repo, number) = number.split_once('#').unwrap();
-                let mut reviewers = Vec::new();
-                let mut concerns = false;
-                loop {
-                    let line = p.next().unwrap().trim();
-                    if line == "</li>" {
-                        break;
-                    }
-                    if line == "pending concerns" {
-                        concerns = true;
-                    } else if let Some(line) = line.strip_prefix("<a href=\"/fcp/") {
-                        let reviewer = line.split_once('"').unwrap().0;
-                        if let Some(n) = reviewer_count.get_mut(reviewer) {
-                            reviewers.push(reviewer);
-                            *n += 1;
-                        }
-                    }
-                }
-                fcps.entry(repo).or_default().push(Fcp {
-                    title,
-                    repo,
-                    number,
-                    disposition,
-                    url,
-                    reviewers,
-                    concerns,
-                });
-            }
+    fn fcps(&mut self, label: String) -> Result<()> {
+        #[derive(Deserialize, Debug)]
+        pub struct FcpWithInfo {
+            pub fcp: FcpProposal,
+            pub reviews: Vec<(GitHubUser, bool)>,
+            pub issue: Issue,
+            pub status_comment: IssueComment,
         }
+
+        #[derive(Debug, Deserialize)]
+        pub struct FcpProposal {
+            pub id: i32,
+            pub fk_issue: i32,
+            pub fk_initiator: i32,
+            pub fk_initiating_comment: i32,
+            pub disposition: String,
+            pub fk_bot_tracking_comment: i32,
+            pub fcp_start: Option<NaiveDateTime>,
+            pub fcp_closed: bool,
+        }
+
+        #[derive(Deserialize, Debug)]
+        pub struct GitHubUser {
+            pub id: i32,
+            pub login: String,
+        }
+
+        #[derive(Deserialize, Debug)]
+        pub struct Issue {
+            pub id: i32,
+            pub number: i32,
+            pub fk_milestone: Option<i32>,
+            pub fk_user: i32,
+            pub fk_assignee: Option<i32>,
+            pub open: bool,
+            pub is_pull_request: bool,
+            pub title: String,
+            pub body: String,
+            pub locked: bool,
+            pub closed_at: Option<NaiveDateTime>,
+            pub created_at: NaiveDateTime,
+            pub updated_at: NaiveDateTime,
+            pub labels: Vec<String>,
+            pub repository: String,
+        }
+
+        #[derive(Deserialize, Debug)]
+        pub struct IssueComment {
+            pub id: i32,
+            pub fk_issue: i32,
+            pub fk_user: i32,
+            pub body: String,
+            pub created_at: NaiveDateTime,
+            pub updated_at: NaiveDateTime,
+            pub repository: String,
+        }
+
+        let mut fcps: Vec<FcpWithInfo> =
+            reqwest::blocking::get("https://rfcbot.rs/api/all")?.json()?;
+        fcps.retain(|fcp| fcp.issue.labels.contains(&label));
+        let waiting_on_author = "S-waiting-on-author".to_string();
+        fcps.retain(|fcp| !fcp.issue.labels.contains(&waiting_on_author));
+        let now = chrono::Utc::now().naive_utc();
+        fcps.retain(|fcp| {
+            let created = fcp.status_comment.created_at;
+            let updated = fcp.status_comment.updated_at;
+            (now - created) > Duration::weeks(4) && (now - updated) > Duration::days(5)
+        });
+
+        let reviewer_count = fcps
+            .iter()
+            .flat_map(|fcp| fcp.reviews.iter())
+            .filter(|review| !review.1)
+            .map(|review| &review.0.login)
+            .counts();
+
+        let repos = fcps
+            .iter()
+            .map(|fcp| fcp.issue.repository.as_str())
+            .collect::<BTreeSet<_>>();
 
         writeln!(self.agenda, "### FCPs")?;
         writeln!(self.agenda,)?;
-        writeln!(
-            self.agenda,
-            "{} open T-libs-api FCPs:",
-            fcps.values().map(|v| v.len()).sum::<usize>()
-        )?;
-        for (repo, fcps) in fcps.iter() {
+        writeln!(self.agenda, "{} open T-libs-api FCPs:", fcps.len())?;
+
+        for repo in repos {
+            let fcps = fcps
+                .iter()
+                .filter(|fcp| fcp.issue.repository == repo)
+                .collect::<Vec<_>>();
+
             writeln!(self.agenda, "<details><summary><a href=\"https://github.com/{}/issues?q=is%3Aopen+label%3AT-libs-api+label%3Aproposed-final-comment-period\">{} <code>{}</code> FCPs</a></summary>\n", repo, fcps.len(), repo)?;
+
             for fcp in fcps {
+                let url = format!(
+                    "https://github.com/{}/issues/{}#issuecomment-{}",
+                    fcp.issue.repository, fcp.issue.number, fcp.status_comment.id
+                );
                 write!(
                     self.agenda,
                     "  - [[{} {}]({})] *{}*",
-                    fcp.disposition,
-                    fcp.number,
-                    fcp.url,
-                    escape(fcp.title)
+                    fcp.fcp.disposition,
+                    fcp.issue.number,
+                    url,
+                    escape(&fcp.issue.title)
                 )?;
-                writeln!(self.agenda, " - ({} checkboxes left)", fcp.reviewers.len())?;
-                if fcp.concerns {
-                    writeln!(self.agenda, "    Blocked on an open concern.")?;
-                }
+                let needed = fcp.reviews.iter().filter(|review| !review.1).count();
+                writeln!(self.agenda, " - ({} checkboxes left)", needed)?;
+
+                // TODO I think i need to update the RFCBOT api endpoint to export this info
+                // if fcp.concerns {
+                //     writeln!(self.agenda, "    Blocked on an open concern.")?;
+                // }
             }
             writeln!(self.agenda, "</details>")?;
         }
+
         writeln!(self.agenda, "<p></p>\n")?;
 
         for (i, (&reviewer, &num)) in reviewer_count.iter().enumerate() {
@@ -257,12 +284,7 @@ impl Generator {
 
     fn write_issues(&mut self, issues: &[Issue]) -> Result<()> {
         for issue in issues.iter().rev() {
-            write!(
-                self.agenda,
-                "  - [[{}]({})]",
-                issue.number,
-                issue.html_url,
-            )?;
+            write!(self.agenda, "  - [[{}]({})]", issue.number, issue.html_url,)?;
             for label in issue.labels.iter().filter(|s| s.starts_with("P-")) {
                 write!(self.agenda, " `{}`", label)?;
             }
@@ -332,7 +354,10 @@ impl IssueQuery {
                     continue;
                 }
 
-                let url_labels = labels.iter().map(|label| format!("label:{}", label)).join("+");
+                let url_labels = labels
+                    .iter()
+                    .map(|label| format!("label:{}", label))
+                    .join("+");
                 writeln!(
                     generator.agenda,
                     "- [{} `{repo}` `{labels}` items](https://github.com/{repo}/issues?q=is:open+{url_labels})",
@@ -397,8 +422,6 @@ fn github_api<T: DeserializeOwned>(endpoint: &str) -> Result<T> {
         client = client.header(AUTHORIZATION, format!("token {}", token));
     }
     let response = client.send()?;
-    // dbg!(response.text());
-    // panic!();
     Ok(response.json()?)
 }
 
