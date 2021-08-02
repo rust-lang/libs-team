@@ -11,6 +11,7 @@ fn main() -> Result<()> {
     let agenda = match args.agenda {
         AgendaKind::Libs => generator.libs_agenda()?,
         AgendaKind::LibsAPI => generator.libs_api_agenda()?,
+        AgendaKind::PGEH => generator.error_handling_pg_agenda()?,
     };
     println!("{}", agenda);
     Ok(())

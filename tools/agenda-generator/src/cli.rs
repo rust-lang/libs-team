@@ -18,5 +18,6 @@ arg_enum! {
     pub enum AgendaKind {
         Libs,
         LibsAPI,
+        PGEH,
     }
 }
