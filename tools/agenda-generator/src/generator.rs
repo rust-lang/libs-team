@@ -21,6 +21,7 @@ impl Generator {
 
 ###### tags: `Libs Meetings` `Minutes`
 
+**Meeting Link**: https://meet.jit.si/rust-libs-meeting-crxoz2at8hiccp7b3ixf89qgxfymlbwr
 **Attendees**: ...
 
 ## Agenda
@@ -72,6 +73,7 @@ impl Generator {
 
 ###### tags: `Libs Meetings` `Minutes`
 
+**Meeting Link**: https://meet.jit.si/rust-libs-meeting-ujepnbwg2lzqgt6wvrndwimi
 **Attendees**: ...
 
 ## Agenda
