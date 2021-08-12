@@ -37,22 +37,29 @@ impl Generator {
 
         self.fcps(String::from("T-libs-api"))?;
 
-        IssueQuery::new("Nominated")
+        GithubQuery::new("Nominated")
             .labels(&["T-libs-api", "I-nominated"])
             .repo("rust-lang/libs-team")
             .repo("rust-lang/rust")
             .repo("rust-lang/rfcs")
             .write(&mut self)?;
 
-        IssueQuery::new("Waiting on team")
+        GithubQuery::new("Waiting on team")
             .labels(&["T-libs-api", "S-waiting-on-team"])
             .repo("rust-lang/rust")
             .repo("rust-lang/rfcs")
             .write(&mut self)?;
 
-        IssueQuery::new("Needs decision")
+        GithubQuery::new("Needs decision")
             .labels(&["T-libs-api", "I-needs-decision"])
             .repo("rust-lang/rust")
+            .write(&mut self)?;
+
+        GithubQuery::new("Stalled Tracking Issues")
+            .labels(&["T-libs-api", "C-tracking-issue"])
+            .repo("rust-lang/rust")
+            .sort(Sort::LeastRecentlyUpdated)
+            .take(5)
             .write(&mut self)?;
 
         writeln!(&mut self.agenda,
@@ -91,41 +98,38 @@ impl Generator {
 
         self.fcps(String::from("T-libs"))?;
 
-        IssueQuery::new("Critical")
+        GithubQuery::new("Critical")
             .labels(&["T-libs", "P-critical"])
             .labels(&["T-libs-api", "P-critical"])
             .repo("rust-lang/rust")
             .repo("rust-lang/rfcs")
             .write(&mut self)?;
 
-        IssueQuery::new("Prioritization Requested")
+        GithubQuery::new("Prioritization Requested")
             .labels(&["T-libs", "I-prioritize"])
             .labels(&["T-libs-api", "I-prioritize"])
             .repo("rust-lang/rust")
             .repo("rust-lang/rfcs")
             .write(&mut self)?;
 
-        IssueQuery::new("Nominated")
+        GithubQuery::new("Nominated")
             .labels(&["T-libs", "I-nominated"])
             .repo("rust-lang/rust")
             .repo("rust-lang/rfcs")
             .repo("rust-lang/libs-team")
             .write(&mut self)?;
 
-        IssueQuery::new("Backports")
+        GithubQuery::new("Backports")
             .labels(&["T-libs", "stable-nominated"])
             .labels(&["T-libs-api", "stable-nominated"])
-            .labels(&["T-libs", "stable-accepted"])
-            .labels(&["T-libs-api", "stable-accepted"])
             .labels(&["T-libs", "beta-nominated"])
             .labels(&["T-libs-api", "beta-nominated"])
-            .labels(&["T-libs", "beta-accepted"])
-            .labels(&["T-libs-api", "beta-accepted"])
+            .state(State::Any)
             .repo("rust-lang/rust")
             .repo("rust-lang/rfcs")
             .write(&mut self)?;
 
-        IssueQuery::new("Regressions")
+        GithubQuery::new("Regressions")
             .labels(&["T-libs", "regression-untriaged"])
             .labels(&["T-libs-api", "regression-untriaged"])
             .labels(&["T-libs", "regression-from-stable-to-stable"])
@@ -150,24 +154,24 @@ impl Generator {
     }
 
     pub fn error_handling_pg_agenda(mut self) -> Result<String> {
-        IssueQuery::new("Nominated")
+        GithubQuery::new("Nominated")
             .labels(&["PG-error-handling", "I-nominated"])
             .repo("rust-lang/rust")
             .repo("rust-lang/project-error-handling")
             .write(&mut self)?;
 
-        IssueQuery::new("PG Error Handling")
+        GithubQuery::new("PG Error Handling")
             .labels(&["PG-error-handling"])
             .repo("rust-lang/rust")
             .repo("rust-lang/project-error-handling")
             .write(&mut self)?;
 
-        IssueQuery::new("Area Error Handling")
+        GithubQuery::new("Area Error Handling")
             .labels(&["A-error-handling"])
             .repo("rust-lang/rust")
             .write(&mut self)?;
 
-        IssueQuery::new("PG Error Handling")
+        GithubQuery::new("PG Error Handling")
             .repo("rust-lang/project-error-handling")
             .write(&mut self)?;
 
@@ -342,24 +346,89 @@ impl Generator {
         Ok(())
     }
 
-    fn dedup(&mut self, mut issues: Vec<Issue>) -> Vec<Issue> {
-        issues.retain(|issue| self.seen.insert(issue.html_url.clone()));
-        issues
+    fn dedup(&mut self, issues: Vec<Issue>) -> impl Iterator<Item = Issue> + '_ {
+        issues.into_iter().filter(move |issue| self.seen.insert(issue.html_url.clone()))
     }
 }
 
-struct IssueQuery {
+#[derive(Clone, Copy)]
+#[allow(dead_code)]
+enum Sort {
+    Newest,
+    Oldest,
+    MostCommented,
+    LeastCommented,
+    MostRecentlyUpdated,
+    LeastRecentlyUpdated,
+}
+
+impl Sort {
+    fn api_str(&self) -> &'static str {
+        match self {
+            Sort::Newest => "&sort=created&direction=desc",
+            Sort::Oldest => "&sort=created&direction=asc",
+            Sort::MostCommented => "&sort=comments&direction=asc",
+            Sort::LeastCommented => "&sort=comments&direction=desc",
+            Sort::MostRecentlyUpdated => "&sort=updated&direction=desc",
+            Sort::LeastRecentlyUpdated => "&sort=updated&direction=asc",
+        }
+    }
+
+    fn web_ui_str(&self) -> &'static str {
+        match self {
+            Sort::Newest => "+sort:created-desc",
+            Sort::Oldest => "+sort:created-asc",
+            Sort::MostCommented => "+sort:comments-desc",
+            Sort::LeastCommented => "+sort:comments-asc",
+            Sort::MostRecentlyUpdated => "+sort:updated-desc",
+            Sort::LeastRecentlyUpdated => "+sort:updated-asc",
+        }
+    }
+}
+
+struct GithubQuery {
     name: &'static str,
     labels: Vec<&'static [&'static str]>,
     repos: Vec<&'static str>,
+    sort: Option<Sort>,
+    count: Option<usize>,
+    state: State,
 }
 
-impl IssueQuery {
+#[allow(dead_code)]
+enum State {
+    Open,
+    Closed,
+    Any,
+}
+
+impl State {
+    fn api_str(&self) -> &'static str {
+        match self {
+            State::Open => "&state=open",
+            State::Closed => "&state=closed",
+            State::Any => "&state=all",
+        }
+    }
+
+    fn web_ui_str(&self) -> &'static str {
+        match self {
+            State::Open => "+is:open",
+            State::Closed => "+is:closed",
+            State::Any => "",
+        }
+    }
+}
+
+impl GithubQuery {
     fn new(name: &'static str) -> Self {
         Self {
             name,
             labels: vec![],
             repos: vec![],
+            sort: None,
+            count: None,
+            state: State::Open,
         }
     }
 
@@ -373,6 +442,21 @@ impl IssueQuery {
         self
     }
 
+    fn sort(&mut self, sort: Sort) -> &mut Self {
+        self.sort = Some(sort);
+        self
+    }
+
+    fn take(&mut self, count: usize) -> &mut Self {
+        self.count = Some(count);
+        self
+    }
+
+    fn state(&mut self, state: State) -> &mut Self {
+        self.state = state;
+        self
+    }
+
     fn write(&mut self, generator: &mut Generator) -> Result<()> {
         writeln!(generator.agenda, "### {}", self.name)?;
         writeln!(generator.agenda,)?;
@@ -382,8 +466,21 @@ impl IssueQuery {
         for repo in &self.repos {
             for labels in &self.labels {
                 let cs_labels = labels.join(",");
-                let endpoint = format!("repos/{}/issues?labels={}", repo, cs_labels);
-                let issues = generator.dedup(github_api(&endpoint)?);
+                let mut endpoint = format!("repos/{}/issues?labels={}", repo, cs_labels);
+
+                endpoint += self.state.api_str();
+
+                if let Some(sort) = self.sort {
+                    endpoint += sort.api_str();
+                }
+
+                let issues = github_api(&endpoint)?;
+                let issues = generator.dedup(issues);
+                let issues: Vec<_> = if let Some(count) = self.count {
+                    issues.take(count).collect()
+                } else {
+                    issues.collect()
+                };
 
                 if issues.is_empty() {
                     continue;
@@ -393,13 +490,23 @@ impl IssueQuery {
                     .iter()
                     .map(|label| format!("label:{}", label))
                     .join("+");
+
+                let mut url = format!("https://github.com/{}/issues?q={}", repo, url_labels);
+
+                url += self.state.web_ui_str();
+
+                if let Some(sort) = self.sort {
+                    url += sort.web_ui_str();
+                }
+
+
                 writeln!(
                     generator.agenda,
-                    "- [{} `{repo}` `{labels}` items](https://github.com/{repo}/issues?q=is:open+{url_labels})",
+                    "- [{} `{repo}` `{labels}` items]({url})",
                     issues.len(),
                     repo = repo,
                     labels = labels.join("` `"),
-                    url_labels = url_labels,
+                    url = url,
                 )?;
                 generator.write_issues(&issues)?;
 
@@ -450,8 +557,9 @@ fn escape(v: &str) -> String {
 }
 
 fn github_api<T: DeserializeOwned>(endpoint: &str) -> Result<T> {
+    let url = format!("https://api.github.com/{}", endpoint);
     let mut client = reqwest::blocking::Client::new()
-        .get(&format!("https://api.github.com/{}", endpoint))
+        .get(&url)
         .header(USER_AGENT, "rust-lang libs agenda maker");
     if let Ok(token) = std::env::var("GITHUB_TOKEN") {
         client = client.header(AUTHORIZATION, format!("token {}", token));
