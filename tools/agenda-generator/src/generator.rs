@@ -350,9 +350,8 @@ impl Generator {
         Ok(())
     }
 
-    fn dedup(&mut self, mut issues: Vec<Issue>) -> Vec<Issue> {
-        issues.retain(|issue| self.seen.insert(issue.html_url.clone()));
-        issues
+    fn dedup(&mut self, issues: Vec<Issue>) -> impl Iterator<Item = Issue> + '_ {
+        issues.into_iter().filter(move |issue| self.seen.insert(issue.html_url.clone()))
     }
 }
 
@@ -400,6 +399,7 @@ struct GithubQuery {
     state: State,
 }
 
+#[allow(dead_code)]
 enum State {
     Open,
     Closed,
@@ -478,13 +478,13 @@ impl GithubQuery {
                     endpoint += sort.api_str();
                 }
 
-                let mut issues = github_api(&endpoint)?;
-
-                if let Some(count) = self.count {
-                    issues.truncate(count);
-                }
-
+                let issues = github_api(&endpoint)?;
                 let issues = generator.dedup(issues);
+                let issues: Vec<_> = if let Some(count) = self.count {
+                    issues.take(count).collect()
+                } else {
+                    issues.collect()
+                };
 
                 if issues.is_empty() {
                     continue;
