@@ -154,6 +154,25 @@ impl Generator {
     }
 
     pub fn error_handling_pg_agenda(mut self) -> Result<String> {
+        writeln!(
+            &mut self.agenda,
+            "# Project Group Error Handling Meeting {}
+
+###### tags: `Error Handling` `Minutes`
+
+**Attendees**: ...
+
+## Agenda Items
+
+- [Open action items](https://hackmd.io/@rust-libs/Hyj7kRSld)
+- Triage
+- Individual Status Updates
+
+## Triage
+",
+            chrono::Utc::now().format("%Y-%m-%d")
+        )?;
+
         GithubQuery::new("Nominated")
             .labels(&["PG-error-handling", "I-nominated"])
             .repo("rust-lang/rust")
@@ -347,7 +366,9 @@ impl Generator {
     }
 
     fn dedup(&mut self, issues: Vec<Issue>) -> impl Iterator<Item = Issue> + '_ {
-        issues.into_iter().filter(move |issue| self.seen.insert(issue.html_url.clone()))
+        issues
+            .into_iter()
+            .filter(move |issue| self.seen.insert(issue.html_url.clone()))
     }
 }
 
@@ -498,7 +519,6 @@ impl GithubQuery {
                 if let Some(sort) = self.sort {
                     url += sort.web_ui_str();
                 }
-
 
                 writeln!(
                     generator.agenda,
