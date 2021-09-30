@@ -509,20 +509,12 @@ impl GithubQuery {
                 let issues = github_api(&endpoint)?;
                 let issues = generator.dedup(issues);
 
-                let excluded_labels: BTreeSet<_> = self
-                    .excluded_labels
-                    .iter()
-                    .flat_map(|labels| labels.iter())
-                    .map(|s| s.to_string())
-                    .collect();
                 let issues = issues.filter(|issue| {
-                    for excluded_label in &excluded_labels {
-                        if issue.labels.contains(&excluded_label) {
-                            return false;
-                        }
-                    }
-
-                    true
+                    !self.excluded_labels.iter().any(|labels| {
+                        labels
+                            .iter()
+                            .all(|&label| issue.labels.iter().any(|x| x == label))
+                    })
                 });
 
                 let issues: Vec<_> = if let Some(count) = self.count {
