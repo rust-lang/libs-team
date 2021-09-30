@@ -1,5 +1,8 @@
-use anyhow::Result;
 use chrono::{Duration, NaiveDateTime};
+use color_eyre::{
+    eyre::{Result, WrapErr},
+    Section, SectionExt,
+};
 use itertools::Itertools;
 use reqwest::header::{AUTHORIZATION, USER_AGENT};
 use serde::de::{DeserializeOwned, Deserializer};
@@ -124,6 +127,7 @@ impl Generator {
             .labels(&["T-libs-api", "stable-nominated"])
             .labels(&["T-libs", "beta-nominated"])
             .labels(&["T-libs-api", "beta-nominated"])
+            .exclude_labels(&["beta-accepted"])
             .state(State::Any)
             .repo("rust-lang/rust")
             .repo("rust-lang/rfcs")
@@ -410,6 +414,7 @@ impl Sort {
 struct GithubQuery {
     name: &'static str,
     labels: Vec<&'static [&'static str]>,
+    excluded_labels: Vec<&'static [&'static str]>,
     repos: Vec<&'static str>,
     sort: Option<Sort>,
     count: Option<usize>,
@@ -446,6 +451,7 @@ impl GithubQuery {
         Self {
             name,
             labels: vec![],
+            excluded_labels: vec![],
             repos: vec![],
             sort: None,
             count: None,
@@ -455,6 +461,11 @@ impl GithubQuery {
 
     fn labels(&mut self, labels: &'static [&'static str]) -> &mut Self {
         self.labels.push(labels);
+        self
+    }
+
+    fn exclude_labels(&mut self, labels: &'static [&'static str]) -> &mut Self {
+        self.excluded_labels.push(labels);
         self
     }
 
@@ -497,6 +508,23 @@ impl GithubQuery {
 
                 let issues = github_api(&endpoint)?;
                 let issues = generator.dedup(issues);
+
+                let excluded_labels: BTreeSet<_> = self
+                    .excluded_labels
+                    .iter()
+                    .flat_map(|labels| labels.iter())
+                    .map(|s| s.to_string())
+                    .collect();
+                let issues = issues.filter(|issue| {
+                    for excluded_label in &excluded_labels {
+                        if issue.labels.contains(&excluded_label) {
+                            return false;
+                        }
+                    }
+
+                    true
+                });
+
                 let issues: Vec<_> = if let Some(count) = self.count {
                     issues.take(count).collect()
                 } else {
@@ -585,7 +613,10 @@ fn github_api<T: DeserializeOwned>(endpoint: &str) -> Result<T> {
         client = client.header(AUTHORIZATION, format!("token {}", token));
     }
     let response = client.send()?;
-    Ok(response.json()?)
+    let response = response.text()?;
+    Ok(serde_json::from_str(&response)
+        .wrap_err("response body cannot be deserialized")
+        .with_section(|| response.header("Response:"))?)
 }
 
 fn deserialize_labels<'de, D: Deserializer<'de>>(d: D) -> Result<Vec<String>, D::Error> {
