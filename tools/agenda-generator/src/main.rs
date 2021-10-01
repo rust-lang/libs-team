@@ -1,11 +1,12 @@
-use anyhow::Result;
 use cli::AgendaKind;
+use color_eyre::eyre;
 use generator::Generator;
 
 mod cli;
 mod generator;
 
-fn main() -> Result<()> {
+fn main() -> eyre::Result<()> {
+    color_eyre::install()?;
     let args = cli::Args::from_args();
     let generator = Generator::default();
     let agenda = match args.agenda {
