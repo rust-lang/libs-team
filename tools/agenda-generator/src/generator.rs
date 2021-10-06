@@ -108,6 +108,17 @@ impl Generator {
             .repo("rust-lang/rfcs")
             .write(&mut self)?;
 
+        GithubQuery::new("Backports")
+            .labels(&["T-libs", "stable-nominated"])
+            .labels(&["T-libs-api", "stable-nominated"])
+            .labels(&["T-libs", "beta-nominated"])
+            .labels(&["T-libs-api", "beta-nominated"])
+            .exclude_labels(&["beta-accepted"])
+            .state(State::Any)
+            .repo("rust-lang/rust")
+            .repo("rust-lang/rfcs")
+            .write(&mut self)?;
+
         GithubQuery::new("Prioritization Requested")
             .labels(&["T-libs", "I-prioritize"])
             .labels(&["T-libs-api", "I-prioritize"])
@@ -120,17 +131,6 @@ impl Generator {
             .repo("rust-lang/rust")
             .repo("rust-lang/rfcs")
             .repo("rust-lang/libs-team")
-            .write(&mut self)?;
-
-        GithubQuery::new("Backports")
-            .labels(&["T-libs", "stable-nominated"])
-            .labels(&["T-libs-api", "stable-nominated"])
-            .labels(&["T-libs", "beta-nominated"])
-            .labels(&["T-libs-api", "beta-nominated"])
-            .exclude_labels(&["beta-accepted"])
-            .state(State::Any)
-            .repo("rust-lang/rust")
-            .repo("rust-lang/rfcs")
             .write(&mut self)?;
 
         GithubQuery::new("Regressions")
