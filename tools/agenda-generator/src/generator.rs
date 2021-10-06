@@ -343,8 +343,8 @@ impl Generator {
                 reviewer, num, reviewer
             )?;
         }
-        writeln!(self.agenda,)?;
-        writeln!(self.agenda,)?;
+        writeln!(self.agenda)?;
+        writeln!(self.agenda)?;
 
         Ok(())
     }
