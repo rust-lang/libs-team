@@ -296,7 +296,7 @@ impl Generator {
 
         writeln!(self.agenda, "### FCPs")?;
         writeln!(self.agenda,)?;
-        writeln!(self.agenda, "{} open T-libs-api FCPs:", fcps.len())?;
+        writeln!(self.agenda, "{} open {} FCPs:", fcps.len(), label)?;
 
         for repo in repos {
             let fcps = fcps
