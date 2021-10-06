@@ -142,6 +142,7 @@ impl Generator {
             .labels(&["T-libs-api", "regression-from-stable-to-beta"])
             .labels(&["T-libs", "regression-from-stable-to-nightly"])
             .labels(&["T-libs-api", "regression-from-stable-to-nightly"])
+            .exclude_labels(&["T-libs-api", "I-nominated"])
             .repo("rust-lang/rust")
             .repo("rust-lang/rfcs")
             .write(&mut self)?;
