@@ -269,14 +269,18 @@ impl Generator {
         let mut fcps: Vec<FcpWithInfo> =
             reqwest::blocking::get("https://rfcbot.rs/api/all")?.json()?;
         fcps.retain(|fcp| fcp.issue.labels.contains(&label));
-        let waiting_on_author = "S-waiting-on-author".to_string();
-        fcps.retain(|fcp| !fcp.issue.labels.contains(&waiting_on_author));
-        let now = chrono::Utc::now().naive_utc();
-        fcps.retain(|fcp| {
-            let created = fcp.status_comment.created_at;
-            let updated = fcp.status_comment.updated_at;
-            (now - created) > Duration::weeks(4) && (now - updated) > Duration::days(5)
-        });
+
+        // Don't filter out FCPs.
+        if false {
+            let waiting_on_author = "S-waiting-on-author".to_string();
+            fcps.retain(|fcp| !fcp.issue.labels.contains(&waiting_on_author));
+            let now = chrono::Utc::now().naive_utc();
+            fcps.retain(|fcp| {
+                let created = fcp.status_comment.created_at;
+                let updated = fcp.status_comment.updated_at;
+                (now - created) > Duration::weeks(4) && (now - updated) > Duration::days(5)
+            });
+        }
 
         let reviewer_count = fcps
             .iter()
