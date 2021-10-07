@@ -522,11 +522,7 @@ impl GithubQuery {
                     })
                 });
 
-                let issues: Vec<_> = if let Some(count) = self.count {
-                    issues.take(count).collect()
-                } else {
-                    issues.collect()
-                };
+                let issues: Vec<_> = issues.collect();
 
                 if issues.is_empty() {
                     continue;
@@ -553,6 +549,11 @@ impl GithubQuery {
                     labels = labels.join("` `"),
                     url = url,
                 )?;
+                let issues = if let Some(count) = self.count {
+                    &issues[..count]
+                } else {
+                    &issues[..]
+                };
                 generator.write_issues(&issues)?;
 
                 empty = false;
