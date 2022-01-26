@@ -30,6 +30,7 @@ impl Generator {
 ## Agenda
 
 - [Open action items](https://hackmd.io/ovrbJj6CRduRgSA0Wzg2zg)
+- [Libs team wishlist](https://hackmd.io/HPjGPC09RayylxGeaIfTew)
 - Triage
 - Anything else?
 
