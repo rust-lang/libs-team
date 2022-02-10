@@ -70,32 +70,15 @@ fn with_output_formatting_maybe<F>(f: F) -> Result<(), Error>
 where
     F: FnOnce() -> Result<(), Error>,
 {
-    use nix::unistd::close;
-    use std::io::{stdout, Write};
-    use std::os::unix::io::AsRawFd;
-    let child = spawn_output_formatter();
-
-    let result = f();
-    let mut stdout = stdout();
-    stdout.flush().context("couldn't flush stdout")?;
-    close(stdout.as_raw_fd()).context("couldn't close stdout")?;
-
-    if let Some(mut child) = child {
-        if !child.wait()?.success() {
-            bail!("output formatting failed");
-        }
-    }
-
-    result
-}
-
-#[cfg(unix)]
-fn spawn_output_formatter() -> Option<std::process::Child> {
-    use nix::unistd::{isatty, dup2};
+    use nix::unistd::{isatty, close, dup, dup2};
     use std::os::unix::io::AsRawFd;
     use std::process::{Command, Stdio};
+    use std::io::{stdout, Write};
 
-    let mut final_child = None;
+    let mut original_stdout = None;
+    let mut inner_child = None;
+
+    stdout().flush().unwrap(); // just in case
 
     if isatty(1) == Ok(true) {
         // Pipe the output through `bat` for nice formatting and paging, if available.
@@ -106,9 +89,12 @@ fn spawn_output_formatter() -> Option<std::process::Child> {
             .stdout(Stdio::inherit())
             .spawn()
         {
+            // Hold on to our stdout for later.
+            original_stdout = Some(dup(1).unwrap());
             // Replace our stdout by the pipe into `bat`.
             dup2(bat.stdin.take().unwrap().as_raw_fd(), 1).unwrap();
-            final_child = Some(bat);
+
+            inner_child = Some(bat);
         }
     }
 
@@ -118,10 +104,32 @@ fn spawn_output_formatter() -> Option<std::process::Child> {
         .stdout(Stdio::inherit()) // This pipes into `bat` if it was executed above.
         .spawn()
     {
+        // Hold on to our stdout for later, if we didn't already.
+        original_stdout.get_or_insert_with(|| dup(1).unwrap());
         // Replace our stdout by the pipe into `rustfmt`.
         dup2(rustfmt.stdin.take().unwrap().as_raw_fd(), 1).unwrap();
-        final_child.get_or_insert(rustfmt);
+
+        inner_child.get_or_insert(rustfmt);
     }
 
-    final_child
+    let result = f();
+
+    if let Some(fd) = original_stdout {
+        // Overwriting the current stdout with the original stdout
+        // closes the pipe to the child's stdin, allowing the child to
+        // exit.
+        stdout().flush().unwrap(); // just in case
+        dup2(fd, 1).unwrap();
+        close(fd).unwrap();
+    }
+
+    if let Some(mut child) = inner_child {
+        // Wait for inner child to exit to ensure it won't write to
+        // original stdout after we return.
+        if !child.wait()?.success() {
+            bail!("output formatting failed");
+        }
+    }
+
+    result
 }
