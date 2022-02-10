@@ -1,6 +1,6 @@
 use std::{env, path::PathBuf};
 
-use anyhow::{Context, Error};
+use anyhow::{bail, Context, Error};
 use structopt::StructOpt;
 
 mod util;
@@ -27,8 +27,7 @@ fn main() -> Result<(), Error> {
         None => find_repo_root()?,
     };
 
-    #[cfg(unix)]
-    setup_output_formatting();
+    let feature = opt.feature;
 
     let libs = vec![
         repo_root.clone().join("library/core"),
@@ -36,11 +35,13 @@ fn main() -> Result<(), Error> {
         repo_root.clone().join("library/std"),
     ];
 
-    for crate_root in libs {
-        visit::pub_unstable(crate_root, &opt.feature)?;
-    }
+    with_output_formatting_maybe(move || {
+        for crate_root in libs {
+            visit::pub_unstable(crate_root, &feature)?;
+        }
 
-    Ok(())
+        Ok(())
+    })
 }
 
 fn find_repo_root() -> Result<PathBuf, Error> {
@@ -56,11 +57,45 @@ fn find_repo_root() -> Result<PathBuf, Error> {
     Ok(path)
 }
 
+#[cfg(not(unix))]
+fn with_output_formatting_maybe<F>(f: F) -> Result<(), Error>
+where
+    F: FnOnce() -> Result<(), Error>,
+{
+    f()
+}
+
 #[cfg(unix)]
-fn setup_output_formatting() {
+fn with_output_formatting_maybe<F>(f: F) -> Result<(), Error>
+where
+    F: FnOnce() -> Result<(), Error>,
+{
+    use nix::unistd::close;
+    use std::io::{stdout, Write};
+    use std::os::unix::io::AsRawFd;
+    let child = spawn_output_formatter();
+
+    let result = f();
+    let mut stdout = stdout();
+    stdout.flush().context("couldn't flush stdout")?;
+    close(stdout.as_raw_fd()).context("couldn't close stdout")?;
+
+    if let Some(mut child) = child {
+        if !child.wait()?.success() {
+            bail!("output formatting failed");
+        }
+    }
+
+    result
+}
+
+#[cfg(unix)]
+fn spawn_output_formatter() -> Option<std::process::Child> {
     use nix::unistd::{isatty, dup2};
     use std::os::unix::io::AsRawFd;
     use std::process::{Command, Stdio};
+
+    let mut final_child = None;
 
     if isatty(1) == Ok(true) {
         // Pipe the output through `bat` for nice formatting and paging, if available.
@@ -73,6 +108,7 @@ fn setup_output_formatting() {
         {
             // Replace our stdout by the pipe into `bat`.
             dup2(bat.stdin.take().unwrap().as_raw_fd(), 1).unwrap();
+            final_child = Some(bat);
         }
     }
 
@@ -84,5 +120,8 @@ fn setup_output_formatting() {
     {
         // Replace our stdout by the pipe into `rustfmt`.
         dup2(rustfmt.stdin.take().unwrap().as_raw_fd(), 1).unwrap();
+        final_child.get_or_insert(rustfmt);
     }
+
+    final_child
 }
