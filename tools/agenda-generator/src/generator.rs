@@ -139,6 +139,11 @@ impl Generator {
             .repo("rust-lang/rust")
             .write(&mut self)?;
 
+        GithubQuery::new("Needs decision")
+            .labels(&["T-libs", "I-needs-decision"])
+            .repo("rust-lang/rust")
+            .write(&mut self)?;
+
         GithubQuery::new("Regressions")
             .labels(&["T-libs", "regression-untriaged"])
             .labels(&["T-libs-api", "regression-untriaged"])
