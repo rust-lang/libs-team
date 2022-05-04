@@ -43,7 +43,7 @@ impl Generator {
 
         GithubQuery::new("Nominated")
             .labels(&["T-libs-api", "I-nominated"])
-            .labels(&["T-libs-api", "I-libs-api-nominated"])
+            .labels(&["I-libs-api-nominated"])
             .repo("rust-lang/libs-team")
             .repo("rust-lang/rust")
             .repo("rust-lang/rfcs")
@@ -128,7 +128,7 @@ impl Generator {
 
         GithubQuery::new("Nominated")
             .labels(&["T-libs", "I-nominated"])
-            .labels(&["T-libs", "I-libs-nominated"])
+            .labels(&["I-libs-nominated"])
             .repo("rust-lang/rust")
             .repo("rust-lang/rfcs")
             .repo("rust-lang/libs-team")
@@ -154,7 +154,7 @@ impl Generator {
             .labels(&["T-libs", "regression-from-stable-to-nightly"])
             .labels(&["T-libs-api", "regression-from-stable-to-nightly"])
             .exclude_labels(&["T-libs-api", "I-nominated"])
-            .exclude_labels(&["T-libs-api", "I-libs-api-nominated"])
+            .exclude_labels(&["I-libs-api-nominated"])
             .repo("rust-lang/rust")
             .repo("rust-lang/rfcs")
             .write(&mut self)?;
