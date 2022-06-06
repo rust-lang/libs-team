@@ -10,22 +10,22 @@ assignees: ""
 
 ## Problem statement
 
-_Start with a concise description of the problem(s) this API change proposal is trying to solve._
+<!-- Start with a concise description of the problem(s) this API change proposal is trying to solve. -->
 
 ## Motivation, use-cases
 
-_Next add any motivating examples. Examples should ideally be real world examples or minimized versions of the real world example in scenarios where the motivating code is not open source._
+<!-- Next add any motivating examples. Examples should ideally be real world examples or minimized versions of the real world example in scenarios where the motivating code is not open source. -->
 
 ## Solution sketches
 
-_Please also sketch out one or more solutions to the problem. For alternative solutions please also include any reasoning for why you didn't suggest those as the primary solution. You don't have to have all the details worked out, but it should be enough to convey the idea._
+<!-- Please also sketch out one or more solutions to the problem. For alternative solutions please also include any reasoning for why you didn't suggest those as the primary solution. You don't have to have all the details worked out, but it should be enough to convey the idea. -->
 
 ## Links and related work
 
-_Provide links to any internal thread(s), github issues, related work from other languages, or other things that are worth following up on._
+<!-- Provide links to any internal thread(s), github issues, related work from other languages, or other things that are worth following up on. -->
 
 ## What happens now?
 
-This issue is part of the libs-api-team [API change proposal process]. Once this issue is filed the libs-api team will review open proposals in its weekly meeting. You should receive feedback within a week or two.
+This issue is part of the libs-api team [API change proposal process]. Once this issue is filed the libs-api team will review open proposals in its weekly meeting. You should receive feedback within a week or two.
 
-[API change proposal]: https://std-dev-guide.rust-lang.org/feature-lifecycle/api-change-proposals.html
+[API change proposal process]: https://std-dev-guide.rust-lang.org/feature-lifecycle/api-change-proposals.html
