@@ -18,7 +18,7 @@ _Next add any motivating examples. Examples should ideally be real world example
 
 ## Solution sketches
 
-_Please also sketch out one or more solutions to the problem. You don't have to have all the details worked out, but it should be enough to convey the idea._
+_Please also sketch out one or more solutions to the problem. For alternative solutions please also include any reasoning for why you didn't suggest those as the primary solution. You don't have to have all the details worked out, but it should be enough to convey the idea._
 
 ## Links and related work
 
@@ -26,6 +26,6 @@ _Provide links to any internal thread(s), github issues, related work from other
 
 ## What happens now?
 
-This issue is part of the libs-api-team [API change proposal process]. Once this issue is filed the libs-api team will review open proposals in its weekly triage meetings. You should receive feedback within a week or two.
+This issue is part of the libs-api-team [API change proposal process]. Once this issue is filed the libs-api team will review open proposals in its weekly meeting. You should receive feedback within a week or two.
 
-[API change proposal]: https://std-dev-guide.rust-lang.org/feature-lifecycle/api-change-proposal.html
+[API change proposal]: https://std-dev-guide.rust-lang.org/feature-lifecycle/api-change-proposals.html
