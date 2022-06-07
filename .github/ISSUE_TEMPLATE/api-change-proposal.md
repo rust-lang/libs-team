@@ -28,4 +28,6 @@ assignees: ""
 
 This issue is part of the libs-api team [API change proposal process]. Once this issue is filed the libs-api team will review open proposals in its weekly meeting. You should receive feedback within a week or two.
 
+**This issue is not meant to be used for technical discussion. There is a Zulip stream for that. Use this issue to leave procedural comments, such as volunteering to review, indicating that you second the proposal (or third, etc), or raising a concern that you would like to be addressed.**
+
 [API change proposal process]: https://std-dev-guide.rust-lang.org/feature-lifecycle/api-change-proposals.html
