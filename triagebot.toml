@@ -1,3 +1,25 @@
+[relabel]
+allow-unauthenticated = [
+    "A-*",
+    "C-*",
+    "D-*",
+    "E-*",
+    "F-*",
+    "I-*",
+    "NLL-*",
+    "O-*",
+    "S-*",
+    "T-*",
+    "WG-*",
+    "needs-fcp",
+    "relnotes",
+    "requires-nightly",
+    "regression-*",
+    "perf-*",
+    "AsyncAwait-OnDeck",
+    "initial-comment-period",
+]
+
 # [major-change]
 # second_label = "initial-comment-period"
 # meeting_label = "I-nominated"
