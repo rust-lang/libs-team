@@ -16,6 +16,22 @@ pub struct Generator {
     seen: BTreeSet<String>,
 }
 
+fn shorten(url: &str) -> String {
+    if let Some(num) = url.strip_prefix("https://github.com/rust-lang/rust/issues/") {
+        format!("rust.tf/{num}")
+    } else if let Some(num) = url.strip_prefix("https://github.com/rust-lang/rust/pull/") {
+        format!("rust.tf/{num}")
+    } else if let Some(num) = url.strip_prefix("https://github.com/rust-lang/rfcs/issues/") {
+        format!("rust.tf/rfc{num}")
+    } else if let Some(num) = url.strip_prefix("https://github.com/rust-lang/rfcs/pull/") {
+        format!("rust.tf/rfc{num}")
+    } else if let Some(url) = url.strip_prefix("https://") {
+        url.to_string()
+    } else {
+        url.to_string()
+    }
+}
+
 impl Generator {
     pub fn libs_api_agenda(mut self) -> Result<String> {
         writeln!(
@@ -309,7 +325,6 @@ impl Generator {
 
         writeln!(self.agenda, "### FCPs")?;
         writeln!(self.agenda,)?;
-        writeln!(self.agenda, "{} open {} FCPs:", fcps.len(), label)?;
 
         for repo in repos {
             let fcps = fcps
@@ -317,19 +332,19 @@ impl Generator {
                 .filter(|fcp| fcp.issue.repository == repo)
                 .collect::<Vec<_>>();
 
-            writeln!(self.agenda, "<details><summary><a href=\"https://github.com/{}/issues?q=is%3Aopen+label%3AT-libs-api+label%3Aproposed-final-comment-period\">{} <code>{}</code> FCPs</a></summary>\n", repo, fcps.len(), repo)?;
+            //writeln!(self.agenda, "<details><summary><a href=\"https://github.com/{}/issues?q=is%3Aopen+label%3AT-libs-api+label%3Aproposed-final-comment-period\">{} <code>{}</code> FCPs</a></summary>\n", repo, fcps.len(), repo)?;
+
+            writeln!(self.agenda, "{} {} {} FCPs\n", fcps.len(), repo, label)?;
 
             for fcp in fcps {
-                let url = format!(
-                    "https://github.com/{}/issues/{}#issuecomment-{}",
-                    fcp.issue.repository, fcp.issue.number, fcp.status_comment.id
-                );
+                let url = shorten(&format!(
+                    "https://github.com/{}/issues/{}", //#issuecomment-{}",
+                    fcp.issue.repository, fcp.issue.number, // fcp.status_comment.id
+                ));
                 write!(
                     self.agenda,
-                    "  - [[{} {}]({})] *{}*",
+                    "  - {} {url} *{}*",
                     fcp.fcp.disposition,
-                    fcp.issue.number,
-                    url,
                     escape(&fcp.issue.title)
                 )?;
                 let needed = fcp.reviews.iter().filter(|review| !review.1).count();
@@ -340,10 +355,12 @@ impl Generator {
                 //     writeln!(self.agenda, "    Blocked on an open concern.")?;
                 // }
             }
-            writeln!(self.agenda, "</details>")?;
+
+            writeln!(self.agenda)?;
+            //writeln!(self.agenda, "</details>")?;
         }
 
-        writeln!(self.agenda, "<p></p>\n")?;
+        //writeln!(self.agenda, "<p></p>\n")?;
 
         for (i, (&reviewer, &num)) in reviewer_count.iter().enumerate() {
             if i != 0 {
@@ -363,7 +380,7 @@ impl Generator {
 
     fn write_issues(&mut self, issues: &[Issue]) -> Result<()> {
         for issue in issues.iter().rev() {
-            write!(self.agenda, "  - [[{}]({})]", issue.number, issue.html_url,)?;
+            write!(self.agenda, "  - {}", shorten(&issue.html_url))?;
             for label in issue.labels.iter().filter(|s| s.starts_with("P-")) {
                 write!(self.agenda, " `{}`", label)?;
             }
