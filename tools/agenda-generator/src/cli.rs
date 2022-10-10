@@ -17,6 +17,7 @@ arg_enum! {
     #[derive(Debug)]
     pub enum AgendaKind {
         Libs,
+        LibsACP,
         LibsAPI,
         PGEH,
     }
