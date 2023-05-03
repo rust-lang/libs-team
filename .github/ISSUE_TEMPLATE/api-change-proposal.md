@@ -26,6 +26,6 @@ assignees: ""
 
 ## What happens now?
 
-This issue is part of the libs-api team [API change proposal process]. Once this issue is filed the libs-api team will review open proposals in its weekly meeting. You should receive feedback within a week or two.
+This issue is part of the libs-api team [API change proposal process]. Once this issue is filed the libs-api team will review open proposals as capability becomes available. Current response times do not have a clear estimate, but may be up to several months.
 
 [API change proposal process]: https://std-dev-guide.rust-lang.org/feature-lifecycle/api-change-proposals.html
