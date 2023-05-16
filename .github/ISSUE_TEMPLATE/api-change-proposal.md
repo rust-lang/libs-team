@@ -21,7 +21,7 @@ assignees: ""
 <!--
 If you have a sketch of a concrete solution, please include it here. You don't have to have all the details worked out, but it should be enough to convey the idea.
 
-If you want to smoke-test whether some solution to the problem would be acceptable, you can delete this section.
+If you want to quickly check whether *any* some solution to the problem would be acceptable, you can delete this section.
 -->
 
 ## Alternatives
