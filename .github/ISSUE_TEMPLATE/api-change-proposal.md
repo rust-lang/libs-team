@@ -42,8 +42,14 @@ This issue is part of the libs-api team [API change proposal process]. Once this
 
 [API change proposal process]: https://std-dev-guide.rust-lang.org/feature-lifecycle/api-change-proposals.html
 
-Some common possible responses from the libs team:
+## Possible responses
 
-- We like this specific solution, approved, you or someone else should implement this.
-- We think this problem is worth solving, but we don't think the proposed solution is the right solution. Here are some hints that might help shape a better solution.
-- We don't think this should be part of the standard library. This doesn't mean the problem is unimportant, but not everything belongs in the standard library.
+The libs team may respond in various different ways. First, the team will consider the *problem* (this doesn't require any concrete solution or alternatives to have been proposed):
+
+- We think this problem seems worth solving, and the standard library might be the right place to solve it.
+- We think that this probably doesn't belong in the standard library.
+
+Second, if there's a concrete solution:
+
+- We think this specific solution looks roughly right, approved, you or someone else should implement this. (Further review will still happen on the subsequent implementation PR.)
+- We're not sure this is the right solution, and the alternatives or other materials don't give us enough information to be sure about that. Here are some questions we have that aren't answered, or rough ideas about alternatives we'd want to see discussed.
