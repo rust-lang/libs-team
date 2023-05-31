@@ -45,8 +45,6 @@ impl Generator {
 
 ## Agenda
 
-- [Open action items](https://hackmd.io/ovrbJj6CRduRgSA0Wzg2zg)
-- [Libs team wishlist](https://hackmd.io/HPjGPC09RayylxGeaIfTew)
 - Triage
 - Anything else?
 
@@ -106,7 +104,6 @@ impl Generator {
 
 ## Agenda
 
-- [Open Action Items](https://hackmd.io/Uehlc0qUQfWfvY1swYWRgQ)
 - Triage
 - Anything else?
 
@@ -378,9 +375,9 @@ impl Generator {
         Ok(())
     }
 
-    fn write_issues(&mut self, issues: &[Issue]) -> Result<()> {
+    fn write_issues(&mut self, category: &str, issues: &[Issue]) -> Result<()> {
         for issue in issues.iter().rev() {
-            write!(self.agenda, "  - {}", shorten(&issue.html_url))?;
+            write!(self.agenda, "### ({category}) {}", shorten(&issue.html_url))?;
             for label in issue.labels.iter().filter(|s| s.starts_with("P-")) {
                 write!(self.agenda, " `{}`", label)?;
             }
@@ -390,7 +387,8 @@ impl Generator {
                 .iter()
                 .any(|l| l == "finished-final-comment-period")
             {
-                write!(self.agenda, "    FCP finished.")?;
+                writeln!(self.agenda,)?;
+                write!(self.agenda, "FCP finished.")?;
                 for label in issue.labels.iter() {
                     if let Some(disposition) = label.strip_prefix("disposition-") {
                         write!(self.agenda, " Should be {}d?", disposition)?;
@@ -398,6 +396,7 @@ impl Generator {
                 }
                 writeln!(self.agenda,)?;
             }
+            writeln!(self.agenda,)?;
         }
 
         Ok(())
@@ -570,20 +569,20 @@ impl GithubQuery {
                     url += sort.web_ui_str();
                 }
 
-                writeln!(
-                    generator.agenda,
-                    "- [{} `{repo}` `{labels}` items]({url})",
-                    issues.len(),
-                    repo = repo,
-                    labels = labels.join("` `"),
-                    url = url,
-                )?;
+                //writeln!(
+                //    generator.agenda,
+                //    "- [{} `{repo}` `{labels}` items]({url})",
+                //    issues.len(),
+                //    repo = repo,
+                //    labels = labels.join("` `"),
+                //    url = url,
+                //)?;
                 let issues = if let Some(count) = self.count {
                     &issues[..count]
                 } else {
                     &issues[..]
                 };
-                generator.write_issues(&issues)?;
+                generator.write_issues(&labels.join(" "), &issues)?;
 
                 empty = false;
             }
