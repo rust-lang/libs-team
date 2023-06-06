@@ -56,7 +56,6 @@ impl Generator {
         self.fcps(String::from("T-libs-api"))?;
 
         GithubQuery::new("Nominated")
-            .labels(&["T-libs-api", "I-nominated"])
             .labels(&["I-libs-api-nominated"])
             .repo("rust-lang/libs-team")
             .repo("rust-lang/rust")
@@ -140,7 +139,6 @@ impl Generator {
             .write(&mut self)?;
 
         GithubQuery::new("Nominated")
-            .labels(&["T-libs", "I-nominated"])
             .labels(&["I-libs-nominated"])
             .repo("rust-lang/rust")
             .repo("rust-lang/rfcs")
@@ -166,7 +164,6 @@ impl Generator {
             .labels(&["T-libs-api", "regression-from-stable-to-beta"])
             .labels(&["T-libs", "regression-from-stable-to-nightly"])
             .labels(&["T-libs-api", "regression-from-stable-to-nightly"])
-            .exclude_labels(&["T-libs-api", "I-nominated"])
             .exclude_labels(&["I-libs-api-nominated"])
             .repo("rust-lang/rust")
             .repo("rust-lang/rfcs")
