@@ -73,6 +73,20 @@ impl Generator {
             .repo("rust-lang/rust")
             .write(&mut self)?;
 
+        GithubQuery::new("New Change Proposals")
+            .labels(&["api-change-proposal"])
+            .repo("rust-lang/libs-team")
+            .sort(Sort::Newest)
+            .take(5)
+            .write(&mut self)?;
+
+        GithubQuery::new("Stalled Change Proposals")
+            .labels(&["api-change-proposal"])
+            .repo("rust-lang/libs-team")
+            .sort(Sort::LeastRecentlyUpdated)
+            .take(5)
+            .write(&mut self)?;
+
         GithubQuery::new("Stalled Tracking Issues")
             .labels(&["T-libs-api", "C-tracking-issue"])
             .repo("rust-lang/rust")
