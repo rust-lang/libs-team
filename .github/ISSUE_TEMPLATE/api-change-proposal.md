@@ -38,9 +38,9 @@ Could this be written using existing APIs? If so, roughly what would that look l
 
 ## What happens now?
 
-This issue is part of the libs-api team [API change proposal process]. Once this issue is filed the libs-api team will review open proposals as capability becomes available. Current response times do not have a clear estimate, but may be up to several months.
+This issue contains an API change proposal (or ACP) and is part of the libs-api team [feature lifecycle]. Once this issue is filed, the libs-api team will review open proposals as capability becomes available. Current response times do not have a clear estimate, but may be up to several months.
 
-[API change proposal process]: https://std-dev-guide.rust-lang.org/feature-lifecycle/api-change-proposals.html
+[feature lifecycle]: https://std-dev-guide.rust-lang.org/development/feature-lifecycle.html
 
 ## Possible responses
 
