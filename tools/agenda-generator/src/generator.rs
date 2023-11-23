@@ -524,7 +524,6 @@ impl GithubQuery {
     }
 
     fn write(&mut self, generator: &mut Generator) -> Result<()> {
-        let mut empty = true;
         for repo in &self.repos {
             for labels in &self.labels {
                 let cs_labels = labels.join(",");
@@ -589,19 +588,9 @@ impl GithubQuery {
     }
 }
 
-#[derive(Debug)]
-struct Fcp<'a> {
-    title: &'a str,
-    repo: &'a str,
-    number: &'a str,
-    disposition: &'a str,
-    url: &'a str,
-    reviewers: Vec<&'a str>,
-    concerns: bool,
-}
-
 #[derive(Debug, Deserialize)]
 struct Issue {
+    #[allow(dead_code)]
     number: u32,
     html_url: String,
     title: String,
