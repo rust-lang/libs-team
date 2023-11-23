@@ -337,7 +337,9 @@ impl Generator {
             for fcp in fcps {
                 let url = shorten(&format!(
                     "https://github.com/{}/issues/{}", //#issuecomment-{}",
-                    fcp.issue.repository, fcp.issue.number, // fcp.status_comment.id
+                    fcp.issue.repository,
+                    fcp.issue.number,
+                    // fcp.status_comment.id
                 ));
                 write!(
                     self.agenda,
