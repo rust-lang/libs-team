@@ -1,23 +1,21 @@
-use structopt::clap::arg_enum;
-use structopt::StructOpt;
+use clap::{Parser, ValueEnum};
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Parser)]
 pub struct Args {
-    #[structopt(long, short, default_value = "LibsAPI", possible_values = &AgendaKind::variants())]
+    #[clap(long, short, default_value = "LibsAPI")]
     pub agenda: AgendaKind,
 }
 
 impl Args {
     pub fn from_args() -> Args {
-        StructOpt::from_args()
+        <Args as Parser>::parse()
     }
 }
 
-arg_enum! {
-    #[derive(Debug)]
-    pub enum AgendaKind {
-        Libs,
-        LibsAPI,
-        PGEH,
-    }
+#[derive(Clone, Debug, ValueEnum)]
+#[clap(rename_all = "verbatim")]
+pub enum AgendaKind {
+    Libs,
+    LibsAPI,
+    PGEH,
 }
