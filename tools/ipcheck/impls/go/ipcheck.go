@@ -17,10 +17,8 @@ func main() {
         IsBenchmarking string
         IsDocumentation string
         IsGlobal bool
-        IsIetfProtocolAssignment string
         IsShared string
         IsUnicastLinkLocal bool
-        IsUnicastSiteLocal string
         IsUniqueLocal string
         McScopeAdminLocal string
         McScopeGlobal string
@@ -44,10 +42,8 @@ func main() {
         "<unsupported>", // IsBenchmarking
         "<unsupported>", // IsDocumentation
         ip.IsGlobalUnicast(), // IsGlobal
-        "<unsupported>", // IsIetfProtocolAssignment
         "<unsupported>", // IsShared
         ip.IsLinkLocalUnicast(), // IsUnicastLinkLocal
-        "<unsupported>", // IsUnicastSiteLocal
         "<unsupported>", // IsUniqueLocal
         "<unsupported>", // McScopeAdminLocal
         "<unsupported>", // McScopeGlobal
@@ -75,10 +71,8 @@ func main() {
     output = strings.Replace(output, "IsBenchmarking", "is_benchmarking", 1)
     output = strings.Replace(output, "IsDocumentation", "is_documentation", 1)
     output = strings.Replace(output, "IsGlobal", "is_global", 1)
-    output = strings.Replace(output, "IsIetfProtocolAssignment", "is_ietf_protocol_assignment", 1)
     output = strings.Replace(output, "IsShared", "is_shared", 1)
     output = strings.Replace(output, "IsUnicastLinkLocal", "is_unicast_link_local", 1)
-    output = strings.Replace(output, "IsUnicastSiteLocal", "is_unicast_site_local", 1)
     output = strings.Replace(output, "IsUniqueLocal", "is_unique_local", 1)
     output = strings.Replace(output, "McScopeAdminLocal", "mc_scope_admin_local", 1)
     output = strings.Replace(output, "McScopeGlobal", "mc_scope_global", 1)
