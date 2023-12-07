@@ -30,10 +30,6 @@ fn main() {
             IpAddr::V4(addr) => addr.is_reserved(),
             IpAddr::V6(_) => false,
         },
-        "is_ietf_protocol_assignment": match addr {
-            IpAddr::V4(addr) => addr.is_ietf_protocol_assignment(),
-            IpAddr::V6(_) => false,
-        },
         "is_benchmarking": match addr {
             IpAddr::V4(addr) => addr.is_benchmarking(),
             IpAddr::V6(_) => false,
@@ -47,10 +43,6 @@ fn main() {
         "is_unique_local": match addr {
             IpAddr::V4(_) => false,
             IpAddr::V6(addr) => addr.is_unique_local(),
-        },
-        "is_unicast_site_local": match addr {
-            IpAddr::V4(_) => false,
-            IpAddr::V6(addr) => addr.is_unicast_site_local(),
         },
         "mc_scope_iface_local": match addr {
             IpAddr::V4(_) => false,
