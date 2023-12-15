@@ -1,7 +1,7 @@
 use serde_json::{Map, Value};
 use std::{collections::BTreeSet, fmt::Write, io::BufRead, net::IpAddr};
 
-const REF_LANG: &'static str = "Rust (New)";
+const REF_LANG: &'static str = "Rust";
 
 fn is_ref(lang: &str) -> bool {
     lang.starts_with("Rust")
