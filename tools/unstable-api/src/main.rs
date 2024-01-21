@@ -1,6 +1,6 @@
 use std::{env, path::PathBuf};
 
-use anyhow::{Context, Error};
+use anyhow::{bail, Context, Error};
 use structopt::StructOpt;
 
 mod util;
@@ -27,8 +27,7 @@ fn main() -> Result<(), Error> {
         None => find_repo_root()?,
     };
 
-    #[cfg(unix)]
-    setup_output_formatting();
+    let feature = opt.feature;
 
     let libs = vec![
         repo_root.clone().join("library/core"),
@@ -36,11 +35,13 @@ fn main() -> Result<(), Error> {
         repo_root.clone().join("library/std"),
     ];
 
-    for crate_root in libs {
-        visit::pub_unstable(crate_root, &opt.feature)?;
-    }
+    with_output_formatting_maybe(move || {
+        for crate_root in libs {
+            visit::pub_unstable(crate_root, &feature)?;
+        }
 
-    Ok(())
+        Ok(())
+    })
 }
 
 fn find_repo_root() -> Result<PathBuf, Error> {
@@ -56,11 +57,28 @@ fn find_repo_root() -> Result<PathBuf, Error> {
     Ok(path)
 }
 
+#[cfg(not(unix))]
+fn with_output_formatting_maybe<F>(f: F) -> Result<(), Error>
+where
+    F: FnOnce() -> Result<(), Error>,
+{
+    f()
+}
+
 #[cfg(unix)]
-fn setup_output_formatting() {
-    use nix::unistd::{isatty, dup2};
+fn with_output_formatting_maybe<F>(f: F) -> Result<(), Error>
+where
+    F: FnOnce() -> Result<(), Error>,
+{
+    use nix::unistd::{isatty, close, dup, dup2};
     use std::os::unix::io::AsRawFd;
     use std::process::{Command, Stdio};
+    use std::io::{stdout, Write};
+
+    let mut original_stdout = None;
+    let mut inner_child = None;
+
+    stdout().flush().unwrap(); // just in case
 
     if isatty(1) == Ok(true) {
         // Pipe the output through `bat` for nice formatting and paging, if available.
@@ -71,8 +89,12 @@ fn setup_output_formatting() {
             .stdout(Stdio::inherit())
             .spawn()
         {
+            // Hold on to our stdout for later.
+            original_stdout = Some(dup(1).unwrap());
             // Replace our stdout by the pipe into `bat`.
             dup2(bat.stdin.take().unwrap().as_raw_fd(), 1).unwrap();
+
+            inner_child = Some(bat);
         }
     }
 
@@ -82,7 +104,32 @@ fn setup_output_formatting() {
         .stdout(Stdio::inherit()) // This pipes into `bat` if it was executed above.
         .spawn()
     {
+        // Hold on to our stdout for later, if we didn't already.
+        original_stdout.get_or_insert_with(|| dup(1).unwrap());
         // Replace our stdout by the pipe into `rustfmt`.
         dup2(rustfmt.stdin.take().unwrap().as_raw_fd(), 1).unwrap();
+
+        inner_child.get_or_insert(rustfmt);
     }
+
+    let result = f();
+
+    if let Some(fd) = original_stdout {
+        // Overwriting the current stdout with the original stdout
+        // closes the pipe to the child's stdin, allowing the child to
+        // exit.
+        stdout().flush().unwrap(); // just in case
+        dup2(fd, 1).unwrap();
+        close(fd).unwrap();
+    }
+
+    if let Some(mut child) = inner_child {
+        // Wait for inner child to exit to ensure it won't write to
+        // original stdout after we return.
+        if !child.wait()?.success() {
+            bail!("output formatting failed");
+        }
+    }
+
+    result
 }
