@@ -12,8 +12,7 @@ fn main() {
     let mut impls =
         std::fs::File::create("../artifacts/.impls").expect("failed to create .impls file");
 
-    output_impl(&mut impls, "Rust (New)", rust::build_new());
-    output_impl(&mut impls, "Rust (Current)", rust::build_current());
+    output_impl(&mut impls, "Rust", rust::build_current());
     output_impl(&mut impls, ".NET", dotnet::build());
     output_impl(&mut impls, "Python", python::build());
     output_impl(&mut impls, "Go", go::build());

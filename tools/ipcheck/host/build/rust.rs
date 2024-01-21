@@ -1,9 +1,5 @@
 use std::path::Path;
 
-pub fn build_new() -> std::io::Result<String> {
-    build_bin("../impls/rust_new", "../artifacts/rust_new", "ipcheck_new")
-}
-
 pub fn build_current() -> std::io::Result<String> {
     build_bin(
         "../impls/rust_current",
