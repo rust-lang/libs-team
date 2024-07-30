@@ -253,9 +253,9 @@ impl Generator {
             pub id: i32,
             pub fk_issue: i32,
             pub fk_initiator: i32,
-            pub fk_initiating_comment: i32,
+            pub fk_initiating_comment: i64,
             pub disposition: String,
-            pub fk_bot_tracking_comment: i32,
+            pub fk_bot_tracking_comment: i64,
             pub fcp_start: Option<NaiveDateTime>,
             pub fcp_closed: bool,
         }
@@ -287,7 +287,7 @@ impl Generator {
 
         #[derive(Deserialize, Debug)]
         pub struct IssueComment {
-            pub id: i32,
+            pub id: i64,
             pub fk_issue: i32,
             pub fk_user: i32,
             pub body: String,
