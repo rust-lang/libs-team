@@ -82,14 +82,15 @@ impl Generator {
             .labels(&["api-change-proposal"])
             .repo("rust-lang/libs-team")
             .sort(Sort::Newest)
-            .take(5)
+            .take(10)
+            .rev(true)
             .write(&mut self)?;
 
         GithubQuery::new("stalled change proposal")
             .labels(&["api-change-proposal"])
             .repo("rust-lang/libs-team")
             .sort(Sort::LeastRecentlyUpdated)
-            .take(5)
+            .take(10)
             .skip(new_proposals.iter())
             .shuffle(true)
             .write(&mut self)?;
@@ -459,6 +460,7 @@ struct GithubQuery {
     count: Option<usize>,
     to_skip: Vec<String>,
     shuffle: bool,
+    rev: bool,
     state: State,
 }
 
@@ -498,6 +500,7 @@ impl GithubQuery {
             to_skip: vec![],
             count: None,
             shuffle: false,
+            rev: false,
             state: State::Open,
         }
     }
@@ -534,6 +537,11 @@ impl GithubQuery {
 
     fn take(&mut self, count: usize) -> &mut Self {
         self.count = Some(count);
+        self
+    }
+
+    fn rev(&mut self, rev: bool) -> &mut Self {
+        self.rev = rev;
         self
     }
 
@@ -605,6 +613,9 @@ impl GithubQuery {
 
                 if let Some(count) = self.count {
                     issues.truncate(count);
+                }
+                if self.rev {
+                    issues.reverse();
                 }
                 generator.write_issues(self.name, &issues)?;
                 all_issues.append(&mut issues);
