@@ -530,7 +530,7 @@ impl GithubQuery {
         self
     }
 
-    fn skip<'a>(&mut self, to_skip: impl Iterator<Item=&'a Issue>) -> &mut Self {
+    fn skip<'a>(&mut self, to_skip: impl Iterator<Item = &'a Issue>) -> &mut Self {
         self.to_skip = to_skip.map(|i| i.html_url.clone()).collect();
         self
     }
@@ -553,7 +553,6 @@ impl GithubQuery {
     fn write(&mut self, generator: &mut Generator) -> Result<Vec<Issue>> {
         let mut all_issues = Vec::new();
 
-
         for repo in &self.repos {
             for labels in &self.labels {
                 let cs_labels = labels.join(",");
@@ -575,9 +574,7 @@ impl GithubQuery {
                             .all(|&label| issue.labels.iter().any(|x| x == label))
                     })
                 });
-                let issues = issues.filter(|i| {
-                    !self.to_skip.iter().any(|s| *s == i.html_url)
-                });
+                let issues = issues.filter(|i| !self.to_skip.iter().any(|s| *s == i.html_url));
 
                 let mut issues: Vec<_> = issues.collect();
 
@@ -637,7 +634,6 @@ struct Issue {
     #[serde(deserialize_with = "deserialize_labels")]
     labels: Vec<String>,
 }
-
 
 fn escape(v: &str) -> String {
     let mut s = String::with_capacity(v.len() + 10);
