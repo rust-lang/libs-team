@@ -80,6 +80,7 @@ impl Generator {
 
         let new_proposals = GithubQuery::new("new change proposal")
             .labels(&["api-change-proposal"])
+            .exclude_labels(&["ACP-accepted"])
             .repo("rust-lang/libs-team")
             .sort(Sort::Newest)
             .take(10)
@@ -88,6 +89,7 @@ impl Generator {
 
         GithubQuery::new("stalled change proposal")
             .labels(&["api-change-proposal"])
+            .exclude_labels(&["ACP-accepted"])
             .repo("rust-lang/libs-team")
             .sort(Sort::LeastRecentlyUpdated)
             .take(10)
