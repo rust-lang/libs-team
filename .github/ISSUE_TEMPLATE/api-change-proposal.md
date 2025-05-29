@@ -1,7 +1,7 @@
 ---
 name: API Change Proposal
 about: Propose a new API change to the libs-api team
-title: "(My API Change Proposal)"
+title: ''
 labels: api-change-proposal, T-libs-api
 assignees: ""
 ---
