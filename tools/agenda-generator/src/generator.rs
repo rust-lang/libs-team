@@ -68,7 +68,7 @@ impl Generator {
             .write(&mut self)?;
 
         GithubQuery::new("waiting on team")
-            .labels(&["T-libs-api", "S-waiting-on-team"])
+            .labels(&["S-waiting-on-libs-api"])
             .repo("rust-lang/rust")
             .repo("rust-lang/rfcs")
             .write(&mut self)?;
@@ -156,7 +156,7 @@ impl Generator {
             .write(&mut self)?;
 
         GithubQuery::new("Waiting on team")
-            .labels(&["T-libs", "S-waiting-on-team"])
+            .labels(&["S-waiting-on-libs"])
             .repo("rust-lang/rust")
             .write(&mut self)?;
 
