@@ -19,11 +19,9 @@ assignees: ""
 ## Solution sketch
 
 <!--
-If you have a sketch of a concrete solution, please include it here. You don't have to have all the details worked out, but it should be enough to convey the idea.
+Please write down all the functions, types or traits that you propose here. Make sure you include the *full type signatures* (arguments, return type, trait bounds etc.).
 
-For any functions or traits you do provide, please write out the *full type signature* (arguments, return type, trait bounds etc.) This is a critical portion of the API and it helps the team understand what exactly you are proposing.
-
-If you want to quickly check whether *any* some solution to the problem would be acceptable, you can delete this section.
+You don't have to include the function bodies, but the signatures are a critical portion of the API and it is really difficult to evaluate the proposal without them.
 -->
 
 ## Alternatives
