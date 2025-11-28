@@ -20,6 +20,9 @@ allow-unauthenticated = [
     "initial-comment-period",
 ]
 
+# Enable rustbot ready/author/blocked shortcuts
+[shortcut]
+
 # [major-change]
 # second_label = "initial-comment-period"
 # meeting_label = "I-nominated"
