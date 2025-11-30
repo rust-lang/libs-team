@@ -37,7 +37,7 @@ fn main() {
         "is_global": addr.is_global(),
         "is_unicast_link_local": match addr {
             IpAddr::V4(addr) => addr.is_link_local(),
-            IpAddr::V6(_) => false,
+            IpAddr::V6(addr) => addr.is_unicast_link_local(),
         },
         "is_unspecified": addr.is_unspecified(),
         "is_unique_local": match addr {
