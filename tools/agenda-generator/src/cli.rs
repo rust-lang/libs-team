@@ -2,7 +2,7 @@ use clap::{Parser, ValueEnum};
 
 #[derive(Debug, Parser)]
 pub struct Args {
-    #[clap(long, short, default_value = "LibsAPI")]
+    #[clap(long, short, default_value = "Libs")]
     pub agenda: AgendaKind,
 }
 
@@ -16,6 +16,5 @@ impl Args {
 #[clap(rename_all = "verbatim")]
 pub enum AgendaKind {
     Libs,
-    LibsAPI,
     PGEH,
 }
