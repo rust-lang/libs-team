@@ -1,8 +1,8 @@
 ---
 name: API Change Proposal
-about: Propose a new API change to the libs-api team
+about: Propose an API change for the standard library
 title: ''
-labels: api-change-proposal, T-libs-api
+labels: api-change-proposal
 assignees: ""
 ---
 
@@ -38,7 +38,7 @@ Could this be written using existing APIs? If so, roughly what would that look l
 
 ## What happens now?
 
-This issue contains an API change proposal (or ACP) and is part of the libs-api team [feature lifecycle]. Once this issue is filed, the libs-api team will review open proposals as capability becomes available. Current response times do not have a clear estimate, but may be up to several months.
+This issue contains an API change proposal (or ACP) and is part of the libs team [feature lifecycle]. Once this issue is filed, the libs team will review open proposals as capability becomes available. Current response times do not have a clear estimate, but may be up to several months.
 
 [feature lifecycle]: https://std-dev-guide.rust-lang.org/development/feature-lifecycle.html
 
@@ -53,3 +53,9 @@ Second, if there's a concrete solution:
 
 - We think this specific solution looks roughly right, approved, you or someone else should implement this. (Further review will still happen on the subsequent implementation PR.)
 - We're not sure this is the right solution, and the alternatives or other materials don't give us enough information to be sure about that. Here are some questions we have that aren't answered, or rough ideas about alternatives we'd want to see discussed.
+
+If we do think an API is worth implementing, we'll add the `ACP-accepted` label to your issue, at which point a [tracking issue] on the `rust-lang/rust` repository should be opened. Once the tracking issue exists, we'll close the issue as completed.
+
+[tracking issue]: https://github.com/rust-lang/rust/issues/new?assignees=&labels=C-tracking-issue%2C+T-libs&template=library_tracking_issue.md&title=Tracking+Issue+for+XXX
+
+In general, we prefer that authors close their own ACPs instead of the team rejecting them, since generally, the solution to a problem is "not now/differently," not "never, in no possible way." However, if an ACP ends up being merged in some other form (e.g. a similar one is accepted) or an ACP cannot be done without breaking stability guarantees, we may close it for that reason.
