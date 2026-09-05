@@ -17,6 +17,39 @@ pub struct Generator {
     seen: BTreeSet<String>,
 }
 
+#[derive(Deserialize)]
+struct FcpWithInfo {
+    fcp: FcpProposal,
+    reviews: Vec<(GitHubUser, bool)>,
+    concerns: Vec<(String, IssueComment, GitHubUser)>,
+    issue: FcpIssue,
+    status_comment: IssueComment,
+}
+
+#[derive(Deserialize)]
+struct FcpProposal {
+    disposition: String,
+}
+
+#[derive(Deserialize)]
+struct GitHubUser {
+    login: String,
+}
+
+#[derive(Deserialize)]
+struct FcpIssue {
+    number: i32,
+    title: String,
+    labels: Vec<String>,
+    repository: String,
+}
+
+#[derive(Deserialize)]
+struct IssueComment {
+    created_at: NaiveDateTime,
+    updated_at: NaiveDateTime,
+}
+
 fn shorten(url: &str) -> String {
     if let Some(num) = url.strip_prefix("https://github.com/rust-lang/rust/issues/") {
         format!("rust.tf/{num}")
@@ -185,64 +218,12 @@ impl Generator {
     }
 
     fn fcps(&mut self, label: String) -> Result<()> {
-        #[derive(Deserialize, Debug)]
-        pub struct FcpWithInfo {
-            pub fcp: FcpProposal,
-            pub reviews: Vec<(GitHubUser, bool)>,
-            pub issue: Issue,
-            pub status_comment: IssueComment,
-        }
+        let fcps: Vec<FcpWithInfo> = reqwest::blocking::get("https://rfcbot.rs/api/all")?.json()?;
 
-        #[derive(Debug, Deserialize)]
-        pub struct FcpProposal {
-            pub id: i32,
-            pub fk_issue: i32,
-            pub fk_initiator: i32,
-            pub fk_initiating_comment: i64,
-            pub disposition: String,
-            pub fk_bot_tracking_comment: i64,
-            pub fcp_start: Option<NaiveDateTime>,
-            pub fcp_closed: bool,
-        }
+        self.write_fcps(label, fcps)
+    }
 
-        #[derive(Deserialize, Debug)]
-        pub struct GitHubUser {
-            pub id: i32,
-            pub login: String,
-        }
-
-        #[derive(Deserialize, Debug)]
-        pub struct Issue {
-            pub id: i32,
-            pub number: i32,
-            pub fk_milestone: Option<i32>,
-            pub fk_user: i32,
-            pub fk_assignee: Option<i32>,
-            pub open: bool,
-            pub is_pull_request: bool,
-            pub title: String,
-            pub body: String,
-            pub locked: bool,
-            pub closed_at: Option<NaiveDateTime>,
-            pub created_at: NaiveDateTime,
-            pub updated_at: NaiveDateTime,
-            pub labels: Vec<String>,
-            pub repository: String,
-        }
-
-        #[derive(Deserialize, Debug)]
-        pub struct IssueComment {
-            pub id: i64,
-            pub fk_issue: i32,
-            pub fk_user: i32,
-            pub body: String,
-            pub created_at: NaiveDateTime,
-            pub updated_at: NaiveDateTime,
-            pub repository: String,
-        }
-
-        let mut fcps: Vec<FcpWithInfo> =
-            reqwest::blocking::get("https://rfcbot.rs/api/all")?.json()?;
+    fn write_fcps(&mut self, label: String, mut fcps: Vec<FcpWithInfo>) -> Result<()> {
         fcps.retain(|fcp| fcp.issue.labels.contains(&label));
 
         // Don't filter out FCPs.
@@ -257,6 +238,8 @@ impl Generator {
             });
         }
 
+        fcps.sort_by_key(|fcp| fcp.concerns.len());
+
         let reviewer_count = fcps
             .iter()
             .flat_map(|fcp| fcp.reviews.iter())
@@ -264,51 +247,38 @@ impl Generator {
             .map(|review| &review.0.login)
             .counts();
 
-        let repos = fcps
-            .iter()
-            .map(|fcp| fcp.issue.repository.as_str())
-            .collect::<BTreeSet<_>>();
-
         writeln!(self.agenda, "### FCPs")?;
         writeln!(self.agenda,)?;
+        writeln!(self.agenda, "{} {} FCPs\n", fcps.len(), label)?;
 
-        for repo in repos {
-            let fcps = fcps
-                .iter()
-                .filter(|fcp| fcp.issue.repository == repo)
-                .collect::<Vec<_>>();
-
-            //writeln!(self.agenda, "<details><summary><a href=\"https://github.com/{}/issues?q=is%3Aopen+label%3AT-libs-api+label%3Aproposed-final-comment-period\">{} <code>{}</code> FCPs</a></summary>\n", repo, fcps.len(), repo)?;
-
-            writeln!(self.agenda, "{} {} {} FCPs\n", fcps.len(), repo, label)?;
-
-            for fcp in fcps {
-                let url = shorten(&format!(
-                    "https://github.com/{}/issues/{}", //#issuecomment-{}",
-                    fcp.issue.repository,
-                    fcp.issue.number,
-                    // fcp.status_comment.id
-                ));
-                write!(
-                    self.agenda,
-                    "  - {} {url} *{}*",
-                    fcp.fcp.disposition,
-                    escape(&fcp.issue.title)
-                )?;
-                let needed = fcp.reviews.iter().filter(|review| !review.1).count();
-                writeln!(self.agenda, " - ({} checkboxes left)", needed)?;
-
-                // TODO I think i need to update the RFCBOT api endpoint to export this info
-                // if fcp.concerns {
-                //     writeln!(self.agenda, "    Blocked on an open concern.")?;
-                // }
+        for fcp in &fcps {
+            let url = shorten(&format!(
+                "https://github.com/{}/issues/{}", //#issuecomment-{}",
+                fcp.issue.repository,
+                fcp.issue.number,
+                // fcp.status_comment.id
+            ));
+            write!(
+                self.agenda,
+                "  - {} {url} *{}*",
+                fcp.fcp.disposition,
+                escape(&fcp.issue.title)
+            )?;
+            let needed = fcp.reviews.iter().filter(|review| !review.1).count();
+            write!(
+                self.agenda,
+                " - ({needed} checkbox{} left",
+                if needed == 1 { "" } else { "es" }
+            )?;
+            match fcp.concerns.len() {
+                0 => {}
+                1 => write!(self.agenda, ", 1 open concern")?,
+                concerns => write!(self.agenda, ", {concerns} open concerns")?,
             }
-
-            writeln!(self.agenda)?;
-            //writeln!(self.agenda, "</details>")?;
+            writeln!(self.agenda, ")")?;
         }
 
-        //writeln!(self.agenda, "<p></p>\n")?;
+        writeln!(self.agenda)?;
 
         for (i, (&reviewer, &num)) in reviewer_count.iter().enumerate() {
             if i != 0 {
