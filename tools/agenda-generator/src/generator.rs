@@ -63,6 +63,10 @@ fn shorten(url: &str) -> String {
         format!("rust.tf/libs{num}")
     } else if let Some(num) = url.strip_prefix("https://github.com/rust-lang/libs-team/pull/") {
         format!("rust.tf/libs{num}")
+    } else if let Some(num) = url.strip_prefix("https://github.com/rust-lang/stdarch/issues/") {
+        format!("rust.tf/stdarch{num}")
+    } else if let Some(num) = url.strip_prefix("https://github.com/rust-lang/stdarch/pull/") {
+        format!("rust.tf/stdarch{num}")
     } else if let Some(url) = url.strip_prefix("https://") {
         url.to_string()
     } else {
