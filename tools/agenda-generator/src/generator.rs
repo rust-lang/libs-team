@@ -119,6 +119,7 @@ impl Generator {
             .repo("rust-lang/rust")
             .repo("rust-lang/rfcs")
             .repo("rust-lang/libs-team")
+            .repo("rust-lang/stdarch")
             .write(&mut self)?;
 
         GithubQuery::new("waiting on team")
