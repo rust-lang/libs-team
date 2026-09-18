@@ -1,6 +1,6 @@
-use super::*;
+use super::{Feature, FilteredUnstableItemVisitor, ModuleVisitor, Visit};
 
-impl<'a, 'ast> Visit<'ast> for FilteredUnstableItemVisitor<'a, syn::Variant> {
+impl<'ast> Visit<'ast> for FilteredUnstableItemVisitor<'_, syn::Variant> {
     fn visit_variant(&mut self, node: &'ast syn::Variant) {
         if self.feature.is_unstable(&node.attrs, None) {
             let attrs = self.feature.strip_attrs(&node.attrs);
@@ -15,14 +15,14 @@ impl<'a, 'ast> Visit<'ast> for FilteredUnstableItemVisitor<'a, syn::Variant> {
                 .visit_variant(&syn::Variant {
                     attrs,
                     ..node.clone()
-                })
+                });
         } else {
-            self.feature.assert_stable(node).visit_variant(node)
+            self.feature.assert_stable(node).visit_variant(node);
         }
     }
 }
 
-impl<'a> ModuleVisitor<'a> {
+impl ModuleVisitor<'_> {
     pub(super) fn visit_item_enum(&mut self, node: &syn::ItemEnum) {
         let is_unstable = self.feature.is_unstable(&node.attrs, Some(&node.vis));
         let mut visitor = FilteredUnstableItemVisitor::<syn::Variant> {
@@ -39,7 +39,7 @@ impl<'a> ModuleVisitor<'a> {
             let attrs = self.feature.strip_attrs(&node.attrs);
 
             self.visit_unstable_item(syn::ItemEnum {
-                attrs: attrs.clone(),
+                attrs,
                 variants: visitor.items.into_iter().collect(),
                 ..node.clone()
             });

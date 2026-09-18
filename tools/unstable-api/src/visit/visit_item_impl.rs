@@ -1,6 +1,8 @@
-use super::*;
+use proc_macro2::TokenStream;
 
-impl<'a, 'ast> Visit<'ast> for FilteredUnstableItemVisitor<'a, syn::ImplItem> {
+use super::{Feature, FilteredUnstableItemVisitor, ModuleVisitor, Visit, util};
+
+impl<'ast> Visit<'ast> for FilteredUnstableItemVisitor<'_, syn::ImplItem> {
     fn visit_impl_item_const(&mut self, node: &'ast syn::ImplItemConst) {
         if self.feature.is_unstable(&node.attrs, None) {
             let attrs = self.feature.strip_attrs(&node.attrs);
@@ -14,9 +16,9 @@ impl<'a, 'ast> Visit<'ast> for FilteredUnstableItemVisitor<'a, syn::ImplItem> {
                 .visit_impl_item_const(&syn::ImplItemConst {
                     attrs,
                     ..node.clone()
-                })
+                });
         } else {
-            self.feature.assert_stable(node).visit_impl_item_const(node)
+            self.feature.assert_stable(node).visit_impl_item_const(node);
         }
     }
 
@@ -26,7 +28,7 @@ impl<'a, 'ast> Visit<'ast> for FilteredUnstableItemVisitor<'a, syn::ImplItem> {
             self.visit_unstable_item(syn::ImplItem::Macro(syn::ImplItemMacro {
                 attrs: attrs.clone(),
                 mac: syn::Macro {
-                    tokens: Default::default(),
+                    tokens: TokenStream::default(),
                     ..node.mac.clone()
                 },
                 ..node.clone()
@@ -36,9 +38,9 @@ impl<'a, 'ast> Visit<'ast> for FilteredUnstableItemVisitor<'a, syn::ImplItem> {
                 .visit_impl_item_macro(&syn::ImplItemMacro {
                     attrs,
                     ..node.clone()
-                })
+                });
         } else {
-            self.feature.assert_stable(node).visit_impl_item_macro(node)
+            self.feature.assert_stable(node).visit_impl_item_macro(node);
         }
     }
 
@@ -55,9 +57,9 @@ impl<'a, 'ast> Visit<'ast> for FilteredUnstableItemVisitor<'a, syn::ImplItem> {
                 .visit_impl_item_fn(&syn::ImplItemFn {
                     attrs,
                     ..node.clone()
-                })
+                });
         } else {
-            self.feature.assert_stable(node).visit_impl_item_fn(node)
+            self.feature.assert_stable(node).visit_impl_item_fn(node);
         }
     }
 
@@ -73,30 +75,30 @@ impl<'a, 'ast> Visit<'ast> for FilteredUnstableItemVisitor<'a, syn::ImplItem> {
                 .visit_impl_item_type(&syn::ImplItemType {
                     attrs,
                     ..node.clone()
-                })
+                });
         } else {
-            self.feature.assert_stable(node).visit_impl_item_type(node)
+            self.feature.assert_stable(node).visit_impl_item_type(node);
         }
     }
 }
 
 struct ImplTraitForTypeVisitor<'a, 'b>(&'b mut FilteredUnstableItemVisitor<'a, syn::ImplItem>);
 
-impl<'a, 'b, 'ast> Visit<'ast> for ImplTraitForTypeVisitor<'a, 'b> {
+impl<'ast> Visit<'ast> for ImplTraitForTypeVisitor<'_, '_> {
     fn visit_impl_item_const(&mut self, _node: &'ast syn::ImplItemConst) {}
 
     fn visit_impl_item_macro(&mut self, node: &'ast syn::ImplItemMacro) {
-        self.0.visit_impl_item_macro(node)
+        self.0.visit_impl_item_macro(node);
     }
 
     fn visit_impl_item_fn(&mut self, _node: &'ast syn::ImplItemFn) {}
 
     fn visit_impl_item_type(&mut self, node: &'ast syn::ImplItemType) {
-        self.0.visit_impl_item_type(node)
+        self.0.visit_impl_item_type(node);
     }
 }
 
-impl<'a> ModuleVisitor<'a> {
+impl ModuleVisitor<'_> {
     pub(super) fn visit_item_impl(&mut self, node: &syn::ItemImpl) {
         let is_unstable = self.feature.is_unstable(&node.attrs, None);
 
@@ -123,7 +125,7 @@ impl<'a> ModuleVisitor<'a> {
             let attrs = self.feature.strip_attrs(&node.attrs);
 
             self.visit_unstable_item(syn::ItemImpl {
-                attrs: attrs.clone(),
+                attrs,
                 items: visitor.items,
                 ..node.clone()
             });

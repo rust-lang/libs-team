@@ -1,6 +1,6 @@
-use super::*;
+use super::{ModuleVisitor, Visit};
 
-impl<'a> ModuleVisitor<'a> {
+impl ModuleVisitor<'_> {
     pub(super) fn visit_item_type(&mut self, node: &syn::ItemType) {
         if self.feature.is_unstable(&node.attrs, Some(&node.vis)) {
             let attrs = self.feature.strip_attrs(&node.attrs);
@@ -15,9 +15,9 @@ impl<'a> ModuleVisitor<'a> {
                 .visit_item_type(&syn::ItemType {
                     attrs,
                     ..node.clone()
-                })
+                });
         } else {
-            self.feature.assert_stable(node).visit_item_type(node)
+            self.feature.assert_stable(node).visit_item_type(node);
         }
     }
 }

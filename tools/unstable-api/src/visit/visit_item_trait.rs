@@ -1,6 +1,8 @@
-use super::*;
+use proc_macro2::TokenStream;
 
-impl<'a, 'ast> Visit<'ast> for FilteredUnstableItemVisitor<'a, syn::TraitItem> {
+use super::{Feature, FilteredUnstableItemVisitor, ModuleVisitor, Visit, util};
+
+impl<'ast> Visit<'ast> for FilteredUnstableItemVisitor<'_, syn::TraitItem> {
     fn visit_trait_item_const(&mut self, node: &'ast syn::TraitItemConst) {
         if self.feature.is_unstable(&node.attrs, None) {
             let attrs = self.feature.strip_attrs(&node.attrs);
@@ -17,11 +19,11 @@ impl<'a, 'ast> Visit<'ast> for FilteredUnstableItemVisitor<'a, syn::TraitItem> {
                 .visit_trait_item_const(&syn::TraitItemConst {
                     attrs,
                     ..node.clone()
-                })
+                });
         } else {
             self.feature
                 .assert_stable(node)
-                .visit_trait_item_const(node)
+                .visit_trait_item_const(node);
         }
     }
 
@@ -31,7 +33,7 @@ impl<'a, 'ast> Visit<'ast> for FilteredUnstableItemVisitor<'a, syn::TraitItem> {
             self.visit_unstable_item(syn::TraitItem::Macro(syn::TraitItemMacro {
                 attrs: attrs.clone(),
                 mac: syn::Macro {
-                    tokens: Default::default(),
+                    tokens: TokenStream::default(),
                     ..node.mac.clone()
                 },
                 ..node.clone()
@@ -41,11 +43,11 @@ impl<'a, 'ast> Visit<'ast> for FilteredUnstableItemVisitor<'a, syn::TraitItem> {
                 .visit_trait_item_macro(&syn::TraitItemMacro {
                     attrs,
                     ..node.clone()
-                })
+                });
         } else {
             self.feature
                 .assert_stable(node)
-                .visit_trait_item_macro(node)
+                .visit_trait_item_macro(node);
         }
     }
 
@@ -62,9 +64,9 @@ impl<'a, 'ast> Visit<'ast> for FilteredUnstableItemVisitor<'a, syn::TraitItem> {
                 .visit_trait_item_fn(&syn::TraitItemFn {
                     attrs,
                     ..node.clone()
-                })
+                });
         } else {
-            self.feature.assert_stable(node).visit_trait_item_fn(node)
+            self.feature.assert_stable(node).visit_trait_item_fn(node);
         }
     }
 
@@ -80,14 +82,14 @@ impl<'a, 'ast> Visit<'ast> for FilteredUnstableItemVisitor<'a, syn::TraitItem> {
                 .visit_trait_item_type(&syn::TraitItemType {
                     attrs,
                     ..node.clone()
-                })
+                });
         } else {
-            self.feature.assert_stable(node).visit_trait_item_type(node)
+            self.feature.assert_stable(node).visit_trait_item_type(node);
         }
     }
 }
 
-impl<'a> ModuleVisitor<'a> {
+impl ModuleVisitor<'_> {
     pub(super) fn visit_item_trait(&mut self, node: &syn::ItemTrait) {
         let is_unstable = self.feature.is_unstable(&node.attrs, Some(&node.vis));
         let mut visitor = FilteredUnstableItemVisitor {
@@ -104,7 +106,7 @@ impl<'a> ModuleVisitor<'a> {
             let attrs = self.feature.strip_attrs(&node.attrs);
 
             self.visit_unstable_item(syn::ItemTrait {
-                attrs: attrs.clone(),
+                attrs,
                 items: visitor.items,
                 ..node.clone()
             });

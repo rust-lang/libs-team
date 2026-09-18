@@ -1,25 +1,25 @@
-use syn::parse::Parser;
+use syn::{parse::Parser, token::Brace};
 
 use std::path::PathBuf;
 
-pub(crate) fn path_is_str(path: &syn::Path, s: &str) -> bool {
-    path.get_ident().map(|ident| ident == s).unwrap_or(false)
+pub fn path_is_str(path: &syn::Path, s: &str) -> bool {
+    path.get_ident().is_some_and(|ident| ident == s)
 }
 
-pub(crate) fn empty_block() -> syn::Block {
+pub fn empty_block() -> syn::Block {
     syn::Block {
-        brace_token: Default::default(),
+        brace_token: Brace::default(),
         stmts: vec![syn::Stmt::Expr(empty_expr(), None)],
     }
 }
 
-pub(crate) fn empty_expr() -> syn::Expr {
+pub fn empty_expr() -> syn::Expr {
     // This is just a `..` token, which is technically a valid expression,
     // but looks like a placeholder.
     syn::parse_quote!(..)
 }
 
-pub(crate) trait AttributeExt {
+pub trait AttributeExt {
     fn is_unstable(&self, feature: &str) -> bool;
     fn is(&self, attr: &str) -> bool;
     fn mod_path(&self) -> Option<PathBuf>;

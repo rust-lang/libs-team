@@ -37,7 +37,7 @@ fn main() -> Result<(), Error> {
     let libs = vec![
         repo_root.clone().join("library/core"),
         repo_root.clone().join("library/alloc"),
-        repo_root.clone().join("library/std"),
+        repo_root.join("library/std"),
     ];
 
     let mut output = String::new();
@@ -62,10 +62,7 @@ fn find_repo_root() -> Result<PathBuf, Error> {
 }
 
 fn write_output(output: &str) -> Result<(), Error> {
-    let output = match format_with_rustfmt(output)? {
-        Some(formatted) => formatted,
-        None => output.to_owned(),
-    };
+    let output = format_with_rustfmt(output)?.unwrap_or_else(|| output.to_owned());
 
     if io::stdout().is_terminal()
         && let Ok(mut bat) = Command::new("bat")
