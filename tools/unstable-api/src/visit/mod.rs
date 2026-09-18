@@ -229,8 +229,10 @@ impl<'a> ModuleVisitor<'a> {
                 if let Some("mod" | "lib") =
                     module_file_path.file_stem().and_then(|stem| stem.to_str())
                 {
+                    // For `mod.rs` and `lib.rs` we set the root path to `./`
                     root_file_path.pop();
                 } else {
+                    // For `x.rs` we set the root path to `./x`
                     root_file_path.set_extension("");
                 }
                 root_file_path
