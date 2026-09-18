@@ -35,10 +35,12 @@ impl<'a> ModuleVisitor<'a> {
                     path.push(node.ident.unraw().to_string());
                     path
                 },
-                self.feature.inherit(self.feature.is_unstable(&node.attrs, Some(&node.vis))),
+                self.feature
+                    .inherit(self.feature.is_unstable(&node.attrs, Some(&node.vis))),
             );
 
-            next.visit_module_inline().expect("failed to visit inline module");
+            next.visit_module_inline()
+                .expect("failed to visit inline module");
 
             // If the module contains unstable items then retain it
             if next.module.is_unstable() {

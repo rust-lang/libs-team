@@ -1,12 +1,12 @@
-use anyhow::{anyhow, ensure, Context, Error};
+use anyhow::{Context, Error, anyhow, ensure};
+use proc_macro2::{Span, TokenStream};
+use quote::ToTokens;
 use syn::{
     ext::IdentExt,
     visit::{self, Visit},
 };
-use quote::ToTokens;
-use proc_macro2::{Span, TokenStream};
 
-use std::{fs, fmt, path::PathBuf};
+use std::{fmt, fs, path::PathBuf};
 
 use crate::util::{self, AttributeExt};
 
@@ -16,7 +16,6 @@ mod visit_item_enum;
 mod visit_item_fn;
 mod visit_item_impl;
 mod visit_item_macro;
-mod visit_item_macro2;
 mod visit_item_mod;
 mod visit_item_static;
 mod visit_item_struct;
@@ -26,7 +25,7 @@ mod visit_item_type;
 mod visit_item_union;
 mod visit_item_use;
 
-pub fn pub_unstable(mut crate_root: PathBuf, feature: &str) -> Result<(), Error> {
+pub fn pub_unstable(mut crate_root: PathBuf, feature: &str) -> Result<String, Error> {
     let crate_name = crate_root
         .file_stem()
         .and_then(|stem| stem.to_str())
@@ -38,11 +37,12 @@ pub fn pub_unstable(mut crate_root: PathBuf, feature: &str) -> Result<(), Error>
     let current_mod = Module {
         original: syn::ItemMod {
             attrs: vec![],
-            vis: syn::Visibility::Public(syn::VisPublic { pub_token: Default::default() }),
+            vis: syn::Visibility::Public(syn::token::Pub::default()),
             mod_token: Default::default(),
             ident: syn::Ident::new(&crate_name, Span::call_site()),
             content: None,
             semi: Some(Default::default()),
+            unsafety: None,
         },
         items: vec![],
         children: vec![],
@@ -59,10 +59,10 @@ pub fn pub_unstable(mut crate_root: PathBuf, feature: &str) -> Result<(), Error>
     visitor.visit_module_file()?;
 
     if visitor.module.is_unstable() {
-        println!("{}", visitor.module);
+        Ok(visitor.module.to_string())
+    } else {
+        Ok(String::new())
     }
-
-    Ok(())
 }
 
 #[derive(Debug)]
@@ -71,7 +71,6 @@ struct ModuleVisitor<'a> {
     root_file_path: PathBuf,
     module_file_path: PathBuf,
     module: Module,
-    inline_modules: Vec<InlineModule>,
     discovered_modules: Vec<DiscoveredModule>,
 }
 
@@ -80,7 +79,12 @@ impl<'a> ModuleVisitor<'a> {
         let content = fs::read_to_string(&self.module_file_path)
             .context(format!("reading {:?}", self.module_file_path))?;
 
-        let node = syn::parse_file(&content)?;
+        // Accepted by rustc but not supported by syn.
+        let content = content
+            .replace("final fn", "fn")
+            .replace("super let", "let");
+        let node = syn::parse_file(&content)
+            .with_context(|| format!("parsing {:?}", self.module_file_path))?;
 
         Ok(node)
     }
@@ -94,7 +98,7 @@ struct Module {
 
 impl Module {
     fn is_unstable(&self) -> bool {
-        self.items.len() > 0 || self.children.iter().any(Module::is_unstable)
+        !self.items.is_empty() || self.children.iter().any(Module::is_unstable)
     }
 }
 
@@ -115,7 +119,12 @@ impl fmt::Display for Module {
             writeln!(f, "{}", attr.to_token_stream())?;
         }
 
-        writeln!(f, "{} mod {} {{", self.original.vis.to_token_stream(), self.original.ident.to_token_stream())?;
+        writeln!(
+            f,
+            "{} mod {} {{",
+            self.original.vis.to_token_stream(),
+            self.original.ident.to_token_stream()
+        )?;
 
         for child in &self.children {
             writeln!(f, "{}", child)?;
@@ -131,11 +140,6 @@ impl fmt::Display for Module {
 
         Ok(())
     }
-}
-
-#[derive(Debug)]
-struct InlineModule {
-    name: String,
 }
 
 struct DiscoveredModule {
@@ -178,10 +182,6 @@ impl<'a, 'ast> Visit<'ast> for ModuleVisitor<'a> {
 
     fn visit_item_macro(&mut self, node: &'ast syn::ItemMacro) {
         self.visit_item_macro(node)
-    }
-
-    fn visit_item_macro2(&mut self, node: &'ast syn::ItemMacro2) {
-        self.visit_item_macro2(node)
     }
 
     fn visit_item_mod(&mut self, node: &'ast syn::ItemMod) {
@@ -238,7 +238,6 @@ impl<'a> ModuleVisitor<'a> {
                 }
             },
             module_file_path,
-            inline_modules: vec![],
             module,
             discovered_modules: vec![],
         }
@@ -287,7 +286,11 @@ impl<'a> ModuleVisitor<'a> {
             };
 
             if let Some(path) = next.path {
-                let path = self.root_file_path.join(path);
+                let path = self
+                    .module_file_path
+                    .parent()
+                    .expect("module files always have a parent directory")
+                    .join(path);
 
                 ensure!(
                     path.exists(),
@@ -409,7 +412,7 @@ struct FilteredUnstableItemVisitor<'a, T> {
 
 impl<'a, T> FilteredUnstableItemVisitor<'a, T> {
     fn is_unstable(&self) -> bool {
-        self.feature.inherited || self.items.len() > 0
+        self.feature.inherited || !self.items.is_empty()
     }
 
     fn visit_unstable_item(&mut self, item: impl Into<T>) {

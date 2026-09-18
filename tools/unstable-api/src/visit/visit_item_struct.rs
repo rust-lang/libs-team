@@ -1,27 +1,27 @@
 use super::*;
 
+impl<'a, 'ast> Visit<'ast> for FilteredUnstableItemVisitor<'a, syn::Field> {
+    fn visit_field(&mut self, node: &'ast syn::Field) {
+        if self.feature.is_unstable(&node.attrs, Some(&node.vis)) {
+            let attrs = self.feature.strip_attrs(&node.attrs);
+
+            self.visit_unstable_item(syn::Field {
+                attrs: attrs.clone(),
+                ..node.clone()
+            });
+
+            self.feature.assert_stable(node).visit_field(&syn::Field {
+                attrs,
+                ..node.clone()
+            })
+        } else {
+            self.feature.assert_stable(node).visit_field(node)
+        }
+    }
+}
+
 impl<'a> ModuleVisitor<'a> {
     pub(super) fn visit_item_struct(&mut self, node: &syn::ItemStruct) {
-        impl<'a, 'ast> Visit<'ast> for FilteredUnstableItemVisitor<'a, syn::Field> {
-            fn visit_field(&mut self, node: &'ast syn::Field) {
-                if self.feature.is_unstable(&node.attrs, Some(&node.vis)) {
-                    let attrs = self.feature.strip_attrs(&node.attrs);
-
-                    self.visit_unstable_item(syn::Field {
-                        attrs: attrs.clone(),
-                        ..node.clone()
-                    });
-
-                    self.feature.assert_stable(node).visit_field(&syn::Field {
-                        attrs,
-                        ..node.clone()
-                    })
-                } else {
-                    self.feature.assert_stable(node).visit_field(node)
-                }
-            }
-        }
-
         let is_unstable = self.feature.is_unstable(&node.attrs, Some(&node.vis));
         let mut visitor = FilteredUnstableItemVisitor::<syn::Field> {
             feature: Feature {

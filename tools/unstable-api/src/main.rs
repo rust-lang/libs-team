@@ -1,26 +1,31 @@
-use std::{env, path::PathBuf};
+use std::{
+    env,
+    io::{self, IsTerminal, Write},
+    path::PathBuf,
+    process::{Command, Stdio},
+};
 
-use anyhow::{bail, Context, Error};
-use structopt::StructOpt;
+use anyhow::{Context, Error, anyhow, bail};
+use clap::Parser;
 
 mod util;
 mod visit;
 
-#[derive(Debug, StructOpt)]
-#[structopt(
+#[derive(Debug, Parser)]
+#[command(
     name = "unstable-api",
     about = "Dump the public API for an unstable feature"
 )]
 struct Opt {
     /// Repository root of `rust-lang/rust`.
-    #[structopt(long, parse(from_os_str))]
+    #[arg(long)]
     repo_root: Option<PathBuf>,
-    #[structopt(long)]
+    #[arg(long)]
     feature: String,
 }
 
 fn main() -> Result<(), Error> {
-    let opt = Opt::from_iter(env::args().filter(|arg| arg != "unstable-api"));
+    let opt = Opt::parse_from(env::args().filter(|arg| arg != "unstable-api"));
 
     let repo_root = match opt.repo_root {
         Some(p) => p,
@@ -35,13 +40,12 @@ fn main() -> Result<(), Error> {
         repo_root.clone().join("library/std"),
     ];
 
-    with_output_formatting_maybe(move || {
-        for crate_root in libs {
-            visit::pub_unstable(crate_root, &feature)?;
-        }
+    let mut output = String::new();
+    for crate_root in libs {
+        output.push_str(&visit::pub_unstable(crate_root, &feature)?);
+    }
 
-        Ok(())
-    })
+    write_output(&output)
 }
 
 fn find_repo_root() -> Result<PathBuf, Error> {
@@ -57,79 +61,54 @@ fn find_repo_root() -> Result<PathBuf, Error> {
     Ok(path)
 }
 
-#[cfg(not(unix))]
-fn with_output_formatting_maybe<F>(f: F) -> Result<(), Error>
-where
-    F: FnOnce() -> Result<(), Error>,
-{
-    f()
-}
+fn write_output(output: &str) -> Result<(), Error> {
+    let output = match format_with_rustfmt(output)? {
+        Some(formatted) => formatted,
+        None => output.to_owned(),
+    };
 
-#[cfg(unix)]
-fn with_output_formatting_maybe<F>(f: F) -> Result<(), Error>
-where
-    F: FnOnce() -> Result<(), Error>,
-{
-    use nix::unistd::{isatty, close, dup, dup2};
-    use std::os::unix::io::AsRawFd;
-    use std::process::{Command, Stdio};
-    use std::io::{stdout, Write};
-
-    let mut original_stdout = None;
-    let mut inner_child = None;
-
-    stdout().flush().unwrap(); // just in case
-
-    if isatty(1) == Ok(true) {
-        // Pipe the output through `bat` for nice formatting and paging, if available.
-        if let Ok(mut bat) = Command::new("bat")
+    if io::stdout().is_terminal()
+        && let Ok(mut bat) = Command::new("bat")
             .arg("--language=rust")
-            .arg("--plain") // Disable line numbers for easy copy-pasting.
+            .arg("--plain")
             .stdin(Stdio::piped())
             .stdout(Stdio::inherit())
             .spawn()
-        {
-            // Hold on to our stdout for later.
-            original_stdout = Some(dup(1).unwrap());
-            // Replace our stdout by the pipe into `bat`.
-            dup2(bat.stdin.take().unwrap().as_raw_fd(), 1).unwrap();
-
-            inner_child = Some(bat);
-        }
-    }
-
-    // Pipe the output through `rustfmt`, if available.
-    if let Ok(mut rustfmt) = Command::new("rustfmt")
-        .stdin(Stdio::piped())
-        .stdout(Stdio::inherit()) // This pipes into `bat` if it was executed above.
-        .spawn()
     {
-        // Hold on to our stdout for later, if we didn't already.
-        original_stdout.get_or_insert_with(|| dup(1).unwrap());
-        // Replace our stdout by the pipe into `rustfmt`.
-        dup2(rustfmt.stdin.take().unwrap().as_raw_fd(), 1).unwrap();
-
-        inner_child.get_or_insert(rustfmt);
-    }
-
-    let result = f();
-
-    if let Some(fd) = original_stdout {
-        // Overwriting the current stdout with the original stdout
-        // closes the pipe to the child's stdin, allowing the child to
-        // exit.
-        stdout().flush().unwrap(); // just in case
-        dup2(fd, 1).unwrap();
-        close(fd).unwrap();
-    }
-
-    if let Some(mut child) = inner_child {
-        // Wait for inner child to exit to ensure it won't write to
-        // original stdout after we return.
-        if !child.wait()?.success() {
+        bat.stdin
+            .take()
+            .ok_or_else(|| anyhow!("bat stdin was not available"))?
+            .write_all(output.as_bytes())?;
+        if !bat.wait()?.success() {
             bail!("output formatting failed");
         }
+        return Ok(());
     }
 
-    result
+    io::stdout().write_all(output.as_bytes())?;
+    Ok(())
+}
+
+fn format_with_rustfmt(output: &str) -> Result<Option<String>, Error> {
+    let mut rustfmt = match Command::new("rustfmt")
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .spawn()
+    {
+        Ok(child) => child,
+        Err(error) if error.kind() == io::ErrorKind::NotFound => return Ok(None),
+        Err(error) => return Err(error.into()),
+    };
+
+    rustfmt
+        .stdin
+        .take()
+        .ok_or_else(|| anyhow!("rustfmt stdin was not available"))?
+        .write_all(output.as_bytes())?;
+    let output = rustfmt.wait_with_output()?;
+    if !output.status.success() {
+        bail!("output formatting failed");
+    }
+
+    Ok(Some(String::from_utf8(output.stdout)?))
 }
