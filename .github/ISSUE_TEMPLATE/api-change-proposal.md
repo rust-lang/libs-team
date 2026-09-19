@@ -1,8 +1,8 @@
 ---
 name: API Change Proposal
-about: Propose a new API change to the libs-api team
+about: Propose an API change for the standard library
 title: ''
-labels: api-change-proposal, T-libs-api
+labels: api-change-proposal, T-libs
 assignees: ""
 ---
 
