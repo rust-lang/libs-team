@@ -1,15 +1,17 @@
-use chrono::{Duration, NaiveDateTime};
-use color_eyre::{
-    eyre::{Result, WrapErr},
-    Section, SectionExt,
-};
-use itertools::Itertools;
-use rand::{seq::SliceRandom, thread_rng};
-use reqwest::header::{AUTHORIZATION, USER_AGENT};
-use serde::de::{DeserializeOwned, Deserializer};
-use serde::Deserialize;
-use std::collections::BTreeSet;
+use std::borrow::Borrow;
+use std::cmp::Reverse;
+use std::collections::{BTreeMap, BTreeSet};
 use std::fmt::Write;
+
+use chrono::{Duration, NaiveDateTime};
+use color_eyre::eyre::{Result, WrapErr};
+use color_eyre::{Section, SectionExt};
+use itertools::Itertools;
+use rand::seq::SliceRandom;
+use rand::thread_rng;
+use reqwest::header::{AUTHORIZATION, USER_AGENT};
+use serde::Deserialize;
+use serde::de::{DeserializeOwned, Deserializer};
 
 #[derive(Default)]
 pub struct Generator {
@@ -19,16 +21,20 @@ pub struct Generator {
 
 #[derive(Deserialize)]
 struct FcpWithInfo {
-    fcp: FcpProposal,
     reviews: Vec<(GitHubUser, bool)>,
     concerns: Vec<(String, IssueComment, GitHubUser)>,
     issue: FcpIssue,
     status_comment: IssueComment,
+    #[serde(skip)]
+    checkboxes: Checkboxes,
 }
 
-#[derive(Deserialize)]
-struct FcpProposal {
-    disposition: String,
+#[derive(Deserialize, Default)]
+struct Checkboxes {
+    libs_unchecked: usize,
+    libs_and_former_fcp_unchecked: usize,
+    other_unchecked: BTreeMap<String, BTreeSet<String>>,
+    total_other_unchecked: usize,
 }
 
 #[derive(Deserialize)]
@@ -44,33 +50,86 @@ struct FcpIssue {
     repository: String,
 }
 
+enum Shorten {
+    Text,
+    Href,
+}
+
 #[derive(Deserialize)]
 struct IssueComment {
     created_at: NaiveDateTime,
     updated_at: NaiveDateTime,
+    id: u64,
 }
 
-fn shorten(url: &str) -> String {
+#[derive(Deserialize)]
+struct FcpTeam {
+    members: Vec<String>,
+}
+
+#[derive(Deserialize)]
+struct FcpTeams {
+    teams: BTreeMap<String, FcpTeam>,
+    #[serde(skip)]
+    people: BTreeMap<String, BTreeSet<String>>,
+}
+
+#[derive(Deserialize, PartialEq, Eq, PartialOrd, Ord)]
+struct TeamMember {
+    github: String,
+}
+impl Borrow<String> for TeamMember {
+    fn borrow(&self) -> &String {
+        &self.github
+    }
+}
+
+#[derive(Deserialize)]
+struct Libs {
+    members: BTreeSet<TeamMember>,
+    alumni: BTreeSet<TeamMember>,
+}
+
+#[derive(Deserialize)]
+struct Teams {
+    libs: Libs,
+}
+
+macro_rules! format_with_anchor {
+    ($url:expr, $orig_url:expr, $anchor:expr, $kind:expr) => {
+        if $anchor.is_empty() {
+            $url.to_string()
+        } else {
+            match $kind {
+                Shorten::Text => format!("[{}](https://{}#{})", $url, $url, $anchor),
+                Shorten::Href => format!("https://{}#{}", $url, $anchor),
+            }
+        }
+    };
+}
+
+fn shorten(url: &str, kind: Shorten) -> String {
+    let (url, anchor) = url.split_once("#").unwrap_or((url, ""));
     if let Some(num) = url.strip_prefix("https://github.com/rust-lang/rust/issues/") {
-        format!("rust.tf/{num}")
+        format_with_anchor!(format_args!("rust.tf/{num}"), orig_url, anchor, kind)
     } else if let Some(num) = url.strip_prefix("https://github.com/rust-lang/rust/pull/") {
-        format!("rust.tf/{num}")
+        format_with_anchor!(format_args!("rust.tf/{num}"), orig_url, anchor, kind)
     } else if let Some(num) = url.strip_prefix("https://github.com/rust-lang/rfcs/issues/") {
-        format!("rust.tf/rfc{num}")
+        format_with_anchor!(format_args!("rust.tf/rfc{num}"), orig_url, anchor, kind)
     } else if let Some(num) = url.strip_prefix("https://github.com/rust-lang/rfcs/pull/") {
-        format!("rust.tf/rfc{num}")
+        format_with_anchor!(format_args!("rust.tf/rfc{num}"), orig_url, anchor, kind)
     } else if let Some(num) = url.strip_prefix("https://github.com/rust-lang/libs-team/issues/") {
-        format!("rust.tf/libs{num}")
+        format_with_anchor!(format_args!("rust.tf/libs{num}"), orig_url, anchor, kind)
     } else if let Some(num) = url.strip_prefix("https://github.com/rust-lang/libs-team/pull/") {
-        format!("rust.tf/libs{num}")
+        format_with_anchor!(format_args!("rust.tf/libs{num}"), orig_url, anchor, kind)
     } else if let Some(num) = url.strip_prefix("https://github.com/rust-lang/stdarch/issues/") {
-        format!("rust.tf/stdarch{num}")
+        format_with_anchor!(format_args!("rust.tf/stdarch{num}"), orig_url, anchor, kind)
     } else if let Some(num) = url.strip_prefix("https://github.com/rust-lang/stdarch/pull/") {
-        format!("rust.tf/stdarch{num}")
+        format_with_anchor!(format_args!("rust.tf/stdarch{num}"), orig_url, anchor, kind)
     } else if let Some(url) = url.strip_prefix("https://") {
-        url.to_string()
+        format_with_anchor!(url, orig_url, anchor, kind)
     } else {
-        url.to_string()
+        format_with_anchor!(url, orig_url, anchor, kind)
     }
 }
 
@@ -87,15 +146,22 @@ impl Generator {
 
 ## Agenda
 
-- Triage
+- Nominated items
+- Regressions
+- FCPs (optional)
+- ACPs (optional)
 - Anything else?
 
-## Triage
 ",
             chrono::Utc::now().format("%Y-%m-%d")
         )?;
 
-        self.fcps(String::from("T-libs"))?;
+        writeln!(
+            &mut self.agenda,
+            "## Triage
+
+",
+        )?;
 
         GithubQuery::new("Critical")
             .labels(&["T-libs", "P-critical"])
@@ -126,7 +192,7 @@ impl Generator {
             .repo("rust-lang/stdarch")
             .write(&mut self)?;
 
-        GithubQuery::new("waiting on team")
+        GithubQuery::new("Waiting on Team")
             .labels(&["S-waiting-on-t-libs"])
             .repo("rust-lang/rust")
             .repo("rust-lang/rfcs")
@@ -148,7 +214,16 @@ impl Generator {
             .repo("rust-lang/rfcs")
             .write(&mut self)?;
 
-        let new_proposals = GithubQuery::new("new change proposal")
+        self.fcps(String::from("T-libs"))?;
+
+        writeln!(
+            &mut self.agenda,
+            "## ACPs
+
+",
+        )?;
+
+        let new_proposals = GithubQuery::new("New")
             .labels(&["api-change-proposal"])
             .exclude_labels(&["ACP-accepted"])
             .repo("rust-lang/libs-team")
@@ -157,7 +232,7 @@ impl Generator {
             .rev(true)
             .write(&mut self)?;
 
-        GithubQuery::new("stalled change proposal")
+        GithubQuery::new("Stalled")
             .labels(&["api-change-proposal"])
             .exclude_labels(&["ACP-accepted"])
             .repo("rust-lang/libs-team")
@@ -167,7 +242,10 @@ impl Generator {
             .shuffle(true)
             .write(&mut self)?;
 
-        writeln!(&mut self.agenda, "_Generated by [fully-automatic-rust-libs-team-triage-meeting-agenda-generator](https://github.com/rust-lang/libs-team/tree/main/tools/agenda-generator)_")?;
+        writeln!(
+            &mut self.agenda,
+            "_Generated by [fully-automatic-rust-libs-team-triage-meeting-agenda-generator](https://github.com/rust-lang/libs-team/tree/main/tools/agenda-generator)_",
+        )?;
         Ok(self.agenda)
     }
 
@@ -216,20 +294,45 @@ impl Generator {
         "## Actions
 
 - [ ] Reply to all issues/PRs discussed in this meeting, or add them to the [open action items](https://hackmd.io/UrERZvi5RwyxfGvo-RtC6g).
-"
+",
     )?;
 
-        writeln!(&mut self.agenda, "_Generated by [fully-automatic-rust-libs-team-triage-meeting-agenda-generator](https://github.com/rust-lang/libs-team/tree/main/tools/agenda-generator)_")?;
+        writeln!(
+            &mut self.agenda,
+            "_Generated by [fully-automatic-rust-libs-team-triage-meeting-agenda-generator](https://github.com/rust-lang/libs-team/tree/main/tools/agenda-generator)_"
+        )?;
         Ok(self.agenda)
     }
 
     fn fcps(&mut self, label: String) -> Result<()> {
         let fcps: Vec<FcpWithInfo> = reqwest::blocking::get("https://rfcbot.rs/api/all")?.json()?;
 
-        self.write_fcps(label, fcps)
+        let mut fcp_teams: FcpTeams =
+            reqwest::blocking::get("https://team-api.infra.rust-lang.org/v1/rfcbot.json")?
+                .json()?;
+        for (team_name, team) in &fcp_teams.teams {
+            for person in &team.members {
+                fcp_teams
+                    .people
+                    .entry(person.clone())
+                    .or_default()
+                    .insert(team_name.to_owned());
+            }
+        }
+
+        let teams: Teams =
+            reqwest::blocking::get("https://team-api.infra.rust-lang.org/v1/teams.json")?.json()?;
+
+        self.write_fcps(label, fcps, fcp_teams, teams)
     }
 
-    fn write_fcps(&mut self, label: String, mut fcps: Vec<FcpWithInfo>) -> Result<()> {
+    fn write_fcps(
+        &mut self,
+        label: String,
+        mut fcps: Vec<FcpWithInfo>,
+        fcp_teams: FcpTeams,
+        teams: Teams,
+    ) -> Result<()> {
         fcps.retain(|fcp| fcp.issue.labels.contains(&label));
 
         // Don't filter out FCPs.
@@ -244,86 +347,152 @@ impl Generator {
             });
         }
 
-        fcps.sort_by_key(|fcp| fcp.concerns.len());
+        // get count of checkboxes needed for libs and other teams
+        for fcp in &mut fcps {
+            for (reviewer, review) in &fcp.reviews {
+                let reviewer = &reviewer.login;
+                if *review {
+                    continue;
+                }
+                let reviewer_teams = fcp_teams.people.get(reviewer);
 
-        let reviewer_count = fcps
-            .iter()
-            .flat_map(|fcp| fcp.reviews.iter())
-            .filter(|review| !review.1)
-            .map(|review| &review.0.login)
-            .counts();
+                let team_name = reviewer_teams
+                    .and_then(|teams| {
+                        if teams.contains("T-libs") {
+                            Some(String::from("A-libs"))
+                        } else {
+                            // require teams to match labels for PR, otherwise
+                            // it's noisy since people are on multiple teams
+                            teams
+                                .iter()
+                                .find(|team| fcp.issue.labels.contains(team))
+                                .cloned()
+                        }
+                    })
+                    .or_else(|| {
+                        // if someone isn't on any FCP team, but is on the libs team or an alum,
+                        // assume they're an old libs-fcp member
+                        (teams.libs.members.contains(reviewer)
+                            || teams.libs.alumni.contains(reviewer))
+                        .then(|| String::from("A-libs-former-fcp"))
+                    })
+                    .unwrap_or_else(|| String::from("Z-other"));
+                if let Some(name) = team_name.strip_prefix("A-") {
+                    if name == "libs" {
+                        fcp.checkboxes.libs_unchecked += 1;
+                    }
+                    fcp.checkboxes.libs_and_former_fcp_unchecked += 1;
+                } else {
+                    fcp.checkboxes.total_other_unchecked += 1;
+                }
+                fcp.checkboxes
+                    .other_unchecked
+                    .entry(team_name)
+                    .or_default()
+                    .insert(reviewer.clone());
+            }
+        }
 
-        writeln!(self.agenda, "### FCPs")?;
-        writeln!(self.agenda,)?;
-        writeln!(self.agenda, "{} {} FCPs\n", fcps.len(), label)?;
+        fcps.sort_by_key(|fcp| {
+            (
+                // move all cases where libs has nothing left to check, and there are no concerns, to the end
+                fcp.checkboxes.libs_and_former_fcp_unchecked == 0 && fcp.concerns.is_empty(),
+                // then, sort by number of concerns ascending (starting at 0)
+                fcp.concerns.len(),
+                // prefer things that libs can check boxes for
+                Reverse(fcp.checkboxes.libs_and_former_fcp_unchecked > 0),
+                // prefer things where libs checking boxes would achieve N-2 threshold
+                Reverse(fcp.checkboxes.total_other_unchecked <= 2),
+                // sort by the number of remaining checkboxes, ascending
+                fcp.checkboxes.libs_and_former_fcp_unchecked + fcp.checkboxes.total_other_unchecked,
+                // prioritize ones where libs has the most checkboxes of the total
+                Reverse(fcp.checkboxes.libs_unchecked),
+                // prioritize ones where also the former FCP team has checkboxes
+                Reverse(fcp.checkboxes.libs_and_former_fcp_unchecked),
+            )
+        });
+
+        writeln!(self.agenda, "## FCPs")?;
+        writeln!(self.agenda)?;
 
         for fcp in &fcps {
-            let url = shorten(&format!(
-                "https://github.com/{}/issues/{}", //#issuecomment-{}",
-                fcp.issue.repository,
-                fcp.issue.number,
-                // fcp.status_comment.id
-            ));
-            write!(
-                self.agenda,
-                "  - {} {url} *{}*",
-                fcp.fcp.disposition,
-                escape(&fcp.issue.title)
-            )?;
-            let needed = fcp.reviews.iter().filter(|review| !review.1).count();
-            write!(
-                self.agenda,
-                " - ({needed} checkbox{} left",
-                if needed == 1 { "" } else { "es" }
-            )?;
-            match fcp.concerns.len() {
-                0 => {}
-                1 => write!(self.agenda, ", 1 open concern")?,
-                concerns => write!(self.agenda, ", {concerns} open concerns")?,
+            let url = shorten(
+                &format!(
+                    "https://github.com/{}/issues/{}#issuecomment-{}",
+                    fcp.issue.repository, fcp.issue.number, fcp.status_comment.id,
+                ),
+                Shorten::Text,
+            );
+            writeln!(self.agenda, "#### {url} {}", escape(&fcp.issue.title))?;
+
+            if fcp.checkboxes.libs_and_former_fcp_unchecked == 0
+                && fcp.checkboxes.total_other_unchecked == 0
+            {
+                writeln!(self.agenda, "- has all checkboxes")?;
+            } else {
+                for (team_name, team) in &fcp.checkboxes.other_unchecked {
+                    let team_name = team_name
+                        .split_once("-")
+                        .map_or(&**team_name, |(_, after)| after);
+                    let count = team.len();
+                    write!(self.agenda, "- needs {count} {team_name}:")?;
+                    for reviewer in team {
+                        write!(
+                            self.agenda,
+                            " [@{reviewer}](https://rfcbot.rs/fcp/{reviewer})"
+                        )?;
+                    }
+                    writeln!(self.agenda)?;
+                }
             }
-            writeln!(self.agenda, ")")?;
+
+            for (concern, comment, _) in &fcp.concerns {
+                writeln!(
+                    self.agenda,
+                    "- blocked by concern: [{concern}]({})",
+                    shorten(
+                        &format!(
+                            "https://github.com/{}/issues/{}#issuecomment-{}",
+                            fcp.issue.repository, fcp.issue.number, comment.id
+                        ),
+                        Shorten::Href
+                    ),
+                )?;
+            }
+
+            writeln!(self.agenda)?;
         }
 
-        writeln!(self.agenda)?;
-
-        for (i, (&reviewer, &num)) in reviewer_count.iter().enumerate() {
-            if i != 0 {
-                write!(self.agenda, ", ")?;
-            }
-            write!(
-                self.agenda,
-                "[{} ({})](https://rfcbot.rs/fcp/{})",
-                reviewer, num, reviewer
-            )?;
-        }
-        writeln!(self.agenda)?;
         writeln!(self.agenda)?;
 
         Ok(())
     }
 
-    fn write_issues(&mut self, category: &str, issues: &[Issue]) -> Result<()> {
+    fn write_issues(&mut self, issues: &[Issue]) -> Result<()> {
         for issue in issues.iter().rev() {
-            write!(self.agenda, "### ({category}) {}", shorten(&issue.html_url))?;
+            write!(
+                self.agenda,
+                "#### {}",
+                shorten(&issue.html_url, Shorten::Text)
+            )?;
             for label in issue.labels.iter().filter(|s| s.starts_with("P-")) {
                 write!(self.agenda, " `{}`", label)?;
             }
-            writeln!(self.agenda, " *{}*", escape(&issue.title).trim())?;
+            writeln!(self.agenda, " {}", escape(&issue.title).trim())?;
             if issue
                 .labels
                 .iter()
                 .any(|l| l == "finished-final-comment-period")
             {
-                writeln!(self.agenda,)?;
                 write!(self.agenda, "FCP finished.")?;
                 for label in issue.labels.iter() {
                     if let Some(disposition) = label.strip_prefix("disposition-") {
                         write!(self.agenda, " Should be {}d?", disposition)?;
                     }
                 }
-                writeln!(self.agenda,)?;
+                writeln!(self.agenda)?;
             }
-            writeln!(self.agenda,)?;
+            writeln!(self.agenda)?;
         }
 
         Ok(())
@@ -473,6 +642,8 @@ impl GithubQuery {
     fn write(&mut self, generator: &mut Generator) -> Result<Vec<Issue>> {
         let mut all_issues = Vec::new();
 
+        let mut written_category = false;
+
         for repo in &self.repos {
             for labels in &self.labels {
                 let cs_labels = labels.join(",");
@@ -534,12 +705,23 @@ impl GithubQuery {
                 if self.rev {
                     issues.reverse();
                 }
-                generator.write_issues(self.name, &issues)?;
+                if !written_category {
+                    let category = self.name;
+                    writeln!(
+                        generator.agenda,
+                        "### {category}
+",
+                    )?;
+                    written_category = true;
+                }
+                generator.write_issues(&issues)?;
                 all_issues.append(&mut issues);
             }
         }
 
-        writeln!(generator.agenda)?;
+        if written_category {
+            writeln!(generator.agenda)?;
+        }
 
         Ok(all_issues)
     }
@@ -557,9 +739,11 @@ struct Issue {
 
 fn escape(v: &str) -> String {
     let mut s = String::with_capacity(v.len() + 10);
+    let mut inside_code = false;
     v.chars().for_each(|c| {
         match c {
-            '_' | '*' | '\\' | '[' | ']' | '-' | '<' | '>' | '`' => s.push('\\'),
+            '`' => inside_code = !inside_code,
+            '_' | '*' | '\\' | '[' | ']' | '-' | '<' | '>' if !inside_code => s.push('\\'),
             _ => {}
         }
         s.push(c);
