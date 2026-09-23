@@ -1,6 +1,6 @@
-use super::*;
+use super::{Feature, FilteredUnstableItemVisitor, ModuleVisitor, Visit};
 
-impl<'a> ModuleVisitor<'a> {
+impl ModuleVisitor<'_> {
     pub(super) fn visit_item_union(&mut self, node: &syn::ItemUnion) {
         let is_unstable = self.feature.is_unstable(&node.attrs, Some(&node.vis));
         let mut visitor = FilteredUnstableItemVisitor::<syn::Field> {
@@ -17,7 +17,7 @@ impl<'a> ModuleVisitor<'a> {
             let attrs = self.feature.strip_attrs(&node.attrs);
 
             self.visit_unstable_item(syn::ItemUnion {
-                attrs: attrs.clone(),
+                attrs,
                 fields: syn::FieldsNamed {
                     named: visitor.items.into_iter().collect(),
                     ..node.fields.clone()

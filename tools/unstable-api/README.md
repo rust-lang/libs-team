@@ -4,7 +4,7 @@ This tool will dump the public API for an unstable feature.
 
 ## Usage
 
-From this directory, run something like:
+From this directory, run:
 
 ```shell
 cargo run --release -- --feature $feature --repo-root $path_to_rust
@@ -24,7 +24,7 @@ You can leave out the `--repo-root` option when running it inside the `rust-lang
 
 ## Output formatting
 
-On Unix, the output is automatically formatted with `rustfmt` and highlighted with `bat`, if you have those tools installed.
+Output is automatically formatted with `rustfmt` and highlighted with `bat`, if you have those tools installed.
 
 ## Limitations
 

@@ -1,27 +1,27 @@
-use super::*;
+use super::{Feature, FilteredUnstableItemVisitor, ModuleVisitor, Visit};
 
-impl<'a> ModuleVisitor<'a> {
-    pub(super) fn visit_item_struct(&mut self, node: &syn::ItemStruct) {
-        impl<'a, 'ast> Visit<'ast> for FilteredUnstableItemVisitor<'a, syn::Field> {
-            fn visit_field(&mut self, node: &'ast syn::Field) {
-                if self.feature.is_unstable(&node.attrs, Some(&node.vis)) {
-                    let attrs = self.feature.strip_attrs(&node.attrs);
+impl<'ast> Visit<'ast> for FilteredUnstableItemVisitor<'_, syn::Field> {
+    fn visit_field(&mut self, node: &'ast syn::Field) {
+        if self.feature.is_unstable(&node.attrs, Some(&node.vis)) {
+            let attrs = self.feature.strip_attrs(&node.attrs);
 
-                    self.visit_unstable_item(syn::Field {
-                        attrs: attrs.clone(),
-                        ..node.clone()
-                    });
+            self.visit_unstable_item(syn::Field {
+                attrs: attrs.clone(),
+                ..node.clone()
+            });
 
-                    self.feature.assert_stable(node).visit_field(&syn::Field {
-                        attrs,
-                        ..node.clone()
-                    })
-                } else {
-                    self.feature.assert_stable(node).visit_field(node)
-                }
-            }
+            self.feature.assert_stable(node).visit_field(&syn::Field {
+                attrs,
+                ..node.clone()
+            });
+        } else {
+            self.feature.assert_stable(node).visit_field(node);
         }
+    }
+}
 
+impl ModuleVisitor<'_> {
+    pub(super) fn visit_item_struct(&mut self, node: &syn::ItemStruct) {
         let is_unstable = self.feature.is_unstable(&node.attrs, Some(&node.vis));
         let mut visitor = FilteredUnstableItemVisitor::<syn::Field> {
             feature: Feature {
@@ -37,7 +37,7 @@ impl<'a> ModuleVisitor<'a> {
             let attrs = self.feature.strip_attrs(&node.attrs);
 
             self.visit_unstable_item(syn::ItemStruct {
-                attrs: attrs.clone(),
+                attrs,
                 fields: match &node.fields {
                     syn::Fields::Named(fields) => syn::Fields::Named(syn::FieldsNamed {
                         named: visitor.items.into_iter().collect(),

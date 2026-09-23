@@ -1,6 +1,8 @@
-use super::*;
+use proc_macro2::TokenStream;
 
-impl<'a> ModuleVisitor<'a> {
+use super::{ModuleVisitor, Visit};
+
+impl ModuleVisitor<'_> {
     pub(super) fn visit_item_macro(&mut self, node: &syn::ItemMacro) {
         if self.feature.is_unstable(&node.attrs, None) {
             let attrs = self.feature.strip_attrs(&node.attrs);
@@ -8,7 +10,7 @@ impl<'a> ModuleVisitor<'a> {
             self.visit_unstable_item(syn::ItemMacro {
                 attrs: attrs.clone(),
                 mac: syn::Macro {
-                    tokens: Default::default(),
+                    tokens: TokenStream::default(),
                     ..node.mac.clone()
                 },
                 ..node.clone()
@@ -19,9 +21,9 @@ impl<'a> ModuleVisitor<'a> {
                 .visit_item_macro(&syn::ItemMacro {
                     attrs,
                     ..node.clone()
-                })
+                });
         } else {
-            self.feature.assert_stable(node).visit_item_macro(node)
+            self.feature.assert_stable(node).visit_item_macro(node);
         }
     }
 }

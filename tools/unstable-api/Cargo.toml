@@ -2,23 +2,11 @@
 name = "cargo-unstable-api"
 version = "0.0.0"
 authors = ["Ashley Mannix <ashleymannix@live.com.au>"]
-edition = "2018"
+edition = "2024"
 
-[dependencies.syn]
-version = "1"
-features = ["full", "extra-traits", "visit"]
-
-[dependencies.quote]
-version = "1"
-
-[dependencies.proc-macro2]
-version = "1"
-
-[dependencies.structopt]
-version = "0.3"
-
-[dependencies.anyhow]
-version = "1"
-
-[target.'cfg(unix)'.dependencies]
-nix = "0.20"
+[dependencies]
+anyhow = "1"
+clap = { version = "4", features = ["derive"] }
+proc-macro2 = "1"
+quote = "1"
+syn = { version = "3", features = ["extra-traits", "full", "visit"] }
