@@ -97,13 +97,11 @@ struct Teams {
 
 macro_rules! format_with_anchor {
     ($url:expr, $orig_url:expr, $anchor:expr, $kind:expr) => {
-        if $anchor.is_empty() {
-            $url.to_string()
-        } else {
-            match $kind {
-                Shorten::Text => format!("[{}](https://{}#{})", $url, $url, $anchor),
-                Shorten::Href => format!("https://{}#{}", $url, $anchor),
-            }
+        match ($kind, $anchor) {
+            (Shorten::Text, "") => format!("[{}](https://{})", $url, $url),
+            (Shorten::Href, "") => format!("https://{}", $url),
+            (Shorten::Text, _) => format!("[{}](https://{}#{})", $url, $url, $anchor),
+            (Shorten::Href, _) => format!("https://{}#{}", $url, $anchor),
         }
     };
 }
