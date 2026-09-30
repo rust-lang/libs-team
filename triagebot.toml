@@ -23,9 +23,31 @@ allow-unauthenticated = [
 # Enable rustbot ready/author/blocked shortcuts
 [shortcut]
 
-# [major-change]
-# second_label = "initial-comment-period"
-# meeting_label = "I-nominated"
-# # can be found by looking for the first number in URLs, e.g. https://rust-lang.zulipchat.com/#narrow/stream/131828-t-compiler
-# zulip_stream = 327149
-# zulip_ping = "T-libs-api"
+[notify-zulip."api-change-proposal"]
+zulip_stream = 327149 # #t-libs/api-changes
+topic = "libs#{number}: {title}"
+message_on_add = """\
+@*T-libs-ping* [libs#{number} "{title}"](https://github.com/rust-lang/libs-team/issues/{number}) has been opened. You can free to discuss on Zulip or GitHub.
+"""
+github_comment = """\
+> [!INFO]
+> [A #t-libs/api-changes Zulip thread was opened for this ACP.]({zulip_topic_url}) You are free to discuss on GitHub or Zulip.
+"""
+
+[notify-zulip."ACP-accepted"]
+zulip_stream = 327149 # #t-libs/api-changes
+topic = "libs#{number}: {title}"
+message_on_add = """\
+libs#{number} has been accepted. Thank you to all who participated in the discussion.
+"""
+required_labels = ["api-change-proposal"]
+
+[notify-zulip."I-libs-nominated"]
+zulip_stream = 639962 # #t-libs/nominated
+topic = "libs#{number}: {title}"
+message_on_add = """\
+@*T-libs-ping* [libs#{number} "{title}"](https://github.com/rust-lang/libs-team/issues/{number}) has been nominated for discussion.
+"""
+message_on_remove = """\
+libs#{number} is no longer nominated.
+"""
