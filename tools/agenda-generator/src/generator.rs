@@ -188,12 +188,17 @@ impl Generator {
             .repo("rust-lang/rfcs")
             .repo("rust-lang/libs-team")
             .repo("rust-lang/stdarch")
+            .repo("rust-lang/std-dev-guide")
+            .repo("rust-lang/rust-forge")
             .write(&mut self)?;
 
         GithubQuery::new("Waiting on Team")
             .labels(&["S-waiting-on-t-libs"])
             .repo("rust-lang/rust")
             .repo("rust-lang/rfcs")
+            .repo("rust-lang/stdarch")
+            .repo("rust-lang/std-dev-guide")
+            .repo("rust-lang/rust-forge")
             .write(&mut self)?;
 
         GithubQuery::new("needs decision")
