@@ -30,7 +30,7 @@ message_on_add = """\
 [libs#{number} "{title}"](https://github.com/rust-lang/libs-team/issues/{number}) has been opened. You are free to discuss on Zulip or GitHub.
 """
 github_comment = """\
-> [!INFO]
+> [!NOTE]
 > [A #t-libs/api-changes Zulip thread was opened for this ACP.]({zulip_topic_url}) You are free to discuss on GitHub or Zulip.
 """
 
