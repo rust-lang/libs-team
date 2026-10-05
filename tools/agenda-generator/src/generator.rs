@@ -139,7 +139,7 @@ impl Generator {
 
 ###### tags: `Libs Meetings` `Minutes`
 
-**Meeting Link**: https://meet.jit.si/rust-libs-meeting-crxoz2at8hiccp7b3ixf89qgxfymlbwr
+**Meeting Link**: https://meet.jit.si/the-libs-agenda
 **Attendees**: ...
 
 ## Agenda
