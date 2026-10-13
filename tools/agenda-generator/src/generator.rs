@@ -96,11 +96,11 @@ struct Teams {
 }
 
 macro_rules! format_with_anchor {
-    ($url:expr, $orig_url:expr, $anchor:expr, $kind:expr) => {
+    ($url:expr, $text:expr, $anchor:expr, $kind:expr) => {
         match ($kind, $anchor) {
-            (Shorten::Text, "") => format!("[{}](https://{})", $url, $url),
+            (Shorten::Text, "") => format!("[{}](https://{})", $text, $url),
             (Shorten::Href, "") => format!("https://{}", $url),
-            (Shorten::Text, _) => format!("[{}](https://{}#{})", $url, $url, $anchor),
+            (Shorten::Text, _) => format!("[{}](https://{}#{})", $text, $url, $anchor),
             (Shorten::Href, _) => format!("https://{}#{}", $url, $anchor),
         }
     };
@@ -108,26 +108,37 @@ macro_rules! format_with_anchor {
 
 fn shorten(url: &str, kind: Shorten) -> String {
     let (url, anchor) = url.split_once("#").unwrap_or((url, ""));
-    if let Some(num) = url.strip_prefix("https://github.com/rust-lang/rust/issues/") {
-        format_with_anchor!(format_args!("rust.tf/{num}"), orig_url, anchor, kind)
-    } else if let Some(num) = url.strip_prefix("https://github.com/rust-lang/rust/pull/") {
-        format_with_anchor!(format_args!("rust.tf/{num}"), orig_url, anchor, kind)
-    } else if let Some(num) = url.strip_prefix("https://github.com/rust-lang/rfcs/issues/") {
-        format_with_anchor!(format_args!("rust.tf/rfc{num}"), orig_url, anchor, kind)
-    } else if let Some(num) = url.strip_prefix("https://github.com/rust-lang/rfcs/pull/") {
-        format_with_anchor!(format_args!("rust.tf/rfc{num}"), orig_url, anchor, kind)
-    } else if let Some(num) = url.strip_prefix("https://github.com/rust-lang/libs-team/issues/") {
-        format_with_anchor!(format_args!("rust.tf/libs{num}"), orig_url, anchor, kind)
-    } else if let Some(num) = url.strip_prefix("https://github.com/rust-lang/libs-team/pull/") {
-        format_with_anchor!(format_args!("rust.tf/libs{num}"), orig_url, anchor, kind)
-    } else if let Some(num) = url.strip_prefix("https://github.com/rust-lang/stdarch/issues/") {
-        format_with_anchor!(format_args!("rust.tf/stdarch{num}"), orig_url, anchor, kind)
-    } else if let Some(num) = url.strip_prefix("https://github.com/rust-lang/stdarch/pull/") {
-        format_with_anchor!(format_args!("rust.tf/stdarch{num}"), orig_url, anchor, kind)
-    } else if let Some(url) = url.strip_prefix("https://") {
-        format_with_anchor!(url, orig_url, anchor, kind)
+
+    if let Some(suffix) = url.strip_prefix("https://github.com/rust-lang/")
+        && let Some((repo, suffix)) = suffix.split_once("/")
+        && let Some((issue_kind @ ("issues" | "pull"), num)) = suffix.split_once("/")
+    {
+        let (short, tf) = match repo {
+            "rust" => ("", true),
+            "rfcs" => ("rfcs", true),
+            "libs-team" => ("libs", true),
+            "rust-forge" => ("forge", false),
+            "stdarch" => ("stdarch", true),
+            _ => (repo, false),
+        };
+        if tf {
+            format_with_anchor!(
+                format_args!("rust.tf/{short}{num}"),
+                format_args!("{short}#{num}"),
+                anchor,
+                kind
+            )
+        } else {
+            format_with_anchor!(
+                format_args!("https://github.com/rust-lang/{repo}/{issue_kind}/{num}"),
+                format_args!("{short}#{num}"),
+                anchor,
+                kind
+            )
+        }
     } else {
-        format_with_anchor!(url, orig_url, anchor, kind)
+        let url = url.strip_prefix("https://").unwrap_or(url);
+        format_with_anchor!(url, url, anchor, kind)
     }
 }
 
@@ -140,6 +151,7 @@ impl Generator {
 ###### tags: `Libs Meetings` `Minutes`
 
 **Meeting Link**: https://meet.jit.si/the-libs-agenda
+**Meeting Link 2**: https://meet.jit.si/the-libs-agenda-2
 **Attendees**: ...
 
 ## Agenda
