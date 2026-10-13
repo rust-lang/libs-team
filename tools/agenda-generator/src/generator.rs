@@ -151,6 +151,7 @@ impl Generator {
 ###### tags: `Libs Meetings` `Minutes`
 
 **Meeting Link**: https://meet.jit.si/the-libs-agenda
+**Meeting Link 2**: https://meet.jit.si/the-libs-agenda-2
 **Attendees**: ...
 
 ## Agenda
