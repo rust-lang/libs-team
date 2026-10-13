@@ -130,7 +130,7 @@ fn shorten(url: &str, kind: Shorten) -> String {
             )
         } else {
             format_with_anchor!(
-                format_args!("https://github.com/rust-lang/{repo}/{issue_kind}/{num}"),
+                format_args!("github.com/rust-lang/{repo}/{issue_kind}/{num}"),
                 format_args!("{short}#{num}"),
                 anchor,
                 kind
