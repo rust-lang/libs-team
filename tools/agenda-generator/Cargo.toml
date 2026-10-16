@@ -6,7 +6,6 @@ edition = "2024"
 
 [dependencies]
 chrono = { version = "0.4", features = ["serde"] }
-clap = { version = "4", features = ["derive"] }
 color-eyre = "0.6"
 itertools = "0.12"
 rand = "0.8.5"
