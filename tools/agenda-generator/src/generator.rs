@@ -199,6 +199,7 @@ impl Generator {
             .repo("rust-lang/rust")
             .repo("rust-lang/rfcs")
             .repo("rust-lang/libs-team")
+            .repo("rust-lang/goals")
             .repo("rust-lang/stdarch")
             .repo("rust-lang/std-dev-guide")
             .repo("rust-lang/rust-forge")
