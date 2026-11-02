@@ -166,7 +166,7 @@ impl Generator {
 
 ###### tags: `Libs Meetings` `Minutes`
 
-**Meeting Link**: (to be changed)
+**Meeting Link**: https://meet.rustnl.org/the-libs-agenda
 
 ## Attendees
 
