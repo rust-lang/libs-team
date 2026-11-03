@@ -118,7 +118,7 @@ fn shorten(url: &str, kind: Shorten) -> String {
     {
         let (short, tf) = match repo {
             "rust" => ("", true),
-            "rfcs" => ("rfcs", true),
+            "rfcs" => ("rfc", true),
             "libs-team" => ("libs", true),
             "rust-forge" => ("forge", false),
             "stdarch" => ("stdarch", true),
@@ -166,7 +166,7 @@ impl Generator {
 
 ###### tags: `Libs Meetings` `Minutes`
 
-**Meeting Link**: (to be changed)
+**Meeting Link**: https://meet.rustnl.org/the-libs-agenda
 
 ## Attendees
 
