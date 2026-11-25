@@ -161,10 +161,12 @@ impl Generator {
     pub fn libs_agenda(mut self) -> Result<String> {
         writeln!(
             &mut self.agenda,
-            "\
-# Libs Meeting {}
-
-###### tags: `Libs Meetings` `Minutes`
+            r###"\
+---
+title: Libs Meeting {date}
+tags: ["Libs Meetings", "Minutes"]
+---
+# Libs Meeting {date}
 
 **Meeting Link**: https://meet.rustnl.org/the-libs-agenda
 
@@ -187,8 +189,8 @@ impl Generator {
 - LC updates?
 - Other updates?
 
-",
-            chrono::Utc::now().format("%Y-%m-%d")
+"###,
+            date = chrono::Utc::now().format("%Y-%m-%d")
         )?;
 
         self.triage()?;
